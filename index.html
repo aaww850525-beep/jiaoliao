@@ -298,9 +298,10 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
   window.addEventListener("online",upd);window.addEventListener("offline",upd);upd();
   if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
     window.addEventListener("load",function(){
-      navigator.serviceWorker.register("sw.js").then(function(r){
+      var hadCtl=!!navigator.serviceWorker.controller,reloaded=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(hadCtl&&!reloaded){reloaded=true;location.reload()}});
+      navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){r.update().catch(function(){});document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")r.update().catch(function(){})});
         r.addEventListener("updatefound",function(){var w=r.installing;if(!w)return;w.addEventListener("statechange",function(){
-          if(w.state==="installed"&&navigator.serviceWorker.controller){var t=document.getElementById("toast");if(t){t.textContent="叫料單已更新，下次開啟會用新版";t.classList.add("on");setTimeout(function(){t.classList.remove("on")},4000)}}
+          if(w.state==="installed"&&navigator.serviceWorker.controller){var t=document.getElementById("toast");if(t){t.textContent="已更新到新版，正在重新載入…";t.classList.add("on");setTimeout(function(){t.classList.remove("on")},4000)}}
           if(w.state==="activated"&&!navigator.serviceWorker.controller&&el)el.textContent="離線版（已可離線使用）";
         })});
       }).catch(function(){});
