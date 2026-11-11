@@ -59,7 +59,11 @@ const grooveGroup="滾溝另件";
 const weldGroup="鍍鋅・不銹鋼焊接另件";
 const carbonCategory=CATALOG.find(c=>c.n==="碳鋼有縫焊另件 20S/40S（黑鐵／電白／熱浸）");
 const grooveCategories=new Set(CATALOG.filter(c=>c.g===carbonCategory.g&&/溝槽/.test(c.n)).map(c=>c.n));
+const PVC_NEW_START=90;const PVC_OLD=new Set([2, 3, 4, 5, 6]);
+const PVC_LAB=Object.fromEntries(CATALOG.slice(PVC_NEW_START).filter(c=>c.lab).map(c=>[c.n,c.lab]));
 const menuCatalog=CATALOG.flatMap((c,ci)=>{
+  if(ci>=PVC_NEW_START)return [];
+  if(PVC_OLD.has(ci))return ci===2?CATALOG.slice(PVC_NEW_START).map((c2,j)=>({...c2,items:c2.items.map((it,ii)=>({it,key:(PVC_NEW_START+j)+"_"+ii})),source:c2.n})):[];
   const indexed=c.items.map((it,ii)=>({it,key:ci+"_"+ii}));
   if(c===carbonCategory){
     return ["黑鐵","電白","熱浸"].map(finish=>({ ...c, n:finish+"焊接另件 20S/40S", g:finish+"焊接另件",
@@ -75,6 +79,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   return [{ ...c, g, items:indexed, source:c.n }];
 });
 function materialName(line){
+  if(line.ik&&+String(line.ik).split("_")[0]>=PVC_NEW_START&&PVC_LAB[line.cat])return PVC_LAB[line.cat]+" "+line.name;
   if(CATALOG.some(c=>c.g==="PVC管材"&&c.n===line.cat))
     return (line.brand||"廠牌未指定")+" "+line.name;
   if(line.name.startsWith("加強型套龍口"))return line.name.replace(/^加強型/,"");
