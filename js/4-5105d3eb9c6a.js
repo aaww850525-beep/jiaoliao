@@ -89,9 +89,16 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   const weldGs=["鍍鋅・不銹鋼焊接另件","黑鐵焊接另件","電白焊接另件","熱浸焊接另件"];
   menuCatalog.forEach(c=>{
     if(c.g==="鐵管・不銹鋼管"){
+      const pick=(re)=>c.items.filter(x=>re.test(x.it.n));
       if(c.n==="鍍鋅鋼管・白鐵管・被覆管"){
-        const fe=c.items.filter(x=>/^鍍鋅/.test(x.it.n)),ss=c.items.filter(x=>/不銹鋼/.test(x.it.n)),ci=c.items.filter(x=>/^CIP/.test(x.it.n));
-        out.push({...c,g:"鐵管",n:"鍍鋅鋼管",items:fe});out.push({...c,g:"不鏽鋼管",n:"不銹鋼管・被覆管",items:ss});out.push({...c,g:"CIP管",n:"CIP 鑄鐵直管 AP",items:ci});return;}
+        const sgp=menuCatalog.find(z=>z.n==="鍍鋅鋼管 SGP／ASTM");const sp=re=>sgp?sgp.items.filter(x=>re.test(x.it.n)):[];
+        out.push({...c,g:"鐵管",n:"鍍鋅鋼管 CNS4626",items:pick(/^鍍鋅鋼管 CNS4626$/).concat(sp(/ASTM/))});
+        out.push({...c,g:"鐵管",n:"鍍鋅鋼管 CNS6445",items:sp(/CNS6445/).concat(pick(/^鍍鋅鋼管 白B管$/))});
+        ["10S","20S","40S"].forEach(k=>out.push({...c,g:"不鏽鋼管",n:"不銹鋼管 "+k,items:pick(new RegExp("^不銹鋼管 "+k+"$"))}));
+        out.push({...c,g:"不鏽鋼管",n:"不銹鋼管 其他厚度",items:pick(/^不銹鋼管 其他厚度$/)});
+        out.push({...c,g:"不鏽鋼管",n:"不銹鋼壓接裸管・被覆管",items:pick(/^不銹鋼(壓接|被覆)/)});
+        out.push({...c,g:"CIP管",n:"CIP 鑄鐵直管 AP",items:pick(/^CIP/)});return;}
+      if(/^(ACI 粉體塗裝鋼管|U\.S\. PIPE|鍍鋅鋼管 SGP)/.test(c.n))return;
       c.g=/^CIP/.test(c.n)?"CIP管":/不銹鋼/.test(c.n)?"不鏽鋼管":"鐵管";
     }else if(c.g==="牙件・焊件・壓接另件"){c.g=/壓接|Nice Joint/.test(c.n)?"壓接另件":"牙件";}
     else if(weldGs.includes(c.g)){c.g="焊件";}
