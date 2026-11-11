@@ -98,15 +98,20 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
         out.push({...c,g:"不鏽鋼管",n:"不銹鋼管 其他厚度",items:pick(/^不銹鋼管 其他厚度$/)});
         out.push({...c,g:"不鏽鋼管",n:"不銹鋼壓接裸管・被覆管",items:pick(/^不銹鋼(壓接|被覆)/)});
         out.push({...c,g:"CIP管",n:"CIP 鑄鐵直管 AP",items:pick(/^CIP/)});return;}
-      if(/^(ACI 粉體塗裝鋼管|U\.S\. PIPE|鍍鋅鋼管 SGP)/.test(c.n))return;
+      if(/^(U\.S\. PIPE|鍍鋅鋼管 SGP)/.test(c.n))return;
+      if(/^ACI/.test(c.n)){out.push({...c,g:"ACI"});return;}
       c.g=/^CIP/.test(c.n)?"CIP管":/不銹鋼/.test(c.n)?"不鏽鋼管":"鐵管";
     }else if(c.g==="牙件・焊件・壓接另件"){c.g=/壓接|Nice Joint/.test(c.n)?"壓接另件":"牙件";}
     else if(weldGs.includes(c.g)){c.g="焊件";}
+    else if(/^ACI/.test(c.n)){c.g="ACI";}
+    else if(c.n==="EMT／RSG 導線管・另件"){const a=c.items.filter(x=>/^ACI/.test(x.it.n));
+      out.push({...c,items:c.items.filter(x=>!/^ACI/.test(x.it.n))});if(a.length)out.push({...c,g:"ACI",n:"ACI 粉體塗裝導線管 EMT／RSG",items:a});return;}
     out.push(c);
   });
   const first=[...new Set(out.map(c=>c.g||"其他"))];
   const order=[];first.forEach(g=>{
-    if(g==="鐵管"){order.push("鐵管","不鏽鋼管","CIP管");}
+    if(g==="ACI")return;
+    if(g==="鐵管"){order.push("鐵管","不鏽鋼管","CIP管","ACI");}
     else if(g==="牙件"||g==="壓接另件"||g==="焊件"){if(!order.includes("牙件"))order.push("牙件","焊件","壓接另件");}
     else if(!order.includes(g))order.push(g);
   });
@@ -144,7 +149,7 @@ $("#appTools").addEventListener("click",e=>{if(e.target.closest("button"))$("#ap
 // ---------- menu (tile style) ----------
 let curCat=-1,curG="",curB="",q="";
 const GROUPS=[...new Set(menuCatalog.map(c=>c.g||"其他"))];
-const GSTYLE={"PVC管材":["#3d6ea6","🟦"],"PVC另件":["#7a5a2e","🧩"],"塑膠另件":["#5c6f8a","🧩"],"鐵管・不銹鋼管":["#567a36","🔧"],"鐵管":["#567a36","🔧"],"不鏽鋼管":["#5f7f8f","🔧"],"CIP管":["#6a4a3a","🔧"],"牙件":["#3a7a72","🔩"],"焊件":["#9a5a2a","🔥"],"壓接另件":["#2f6f9a","🔗"],"懸吊・支架・螺絲":["#4f4a8a","🔩"],
+const GSTYLE={"PVC管材":["#3d6ea6","🟦"],"PVC另件":["#7a5a2e","🧩"],"塑膠另件":["#5c6f8a","🧩"],"鐵管・不銹鋼管":["#567a36","🔧"],"鐵管":["#567a36","🔧"],"不鏽鋼管":["#5f7f8f","🔧"],"CIP管":["#6a4a3a","🔧"],"牙件":["#3a7a72","🔩"],"焊件":["#9a5a2a","🔥"],"壓接另件":["#2f6f9a","🔗"],"ACI":["#4a6a8a","🏷️"],"懸吊・支架・螺絲":["#4f4a8a","🔩"],
   "五金另料":["#8a4545","🧰"],"牙件・焊件・壓接另件":["#3a7a72","🔥"],"法蘭・墊片":["#7a5090","⭕"],"閥類":["#477a43","🚰"],"軟管・防震接頭":["#2f6fa0","➰"],
   "電管":["#a06a1f","⚡"],"電線":["#9a4f2a","🔌"],"開關":["#6a5a9a","🎛️"]};
 const cColor=(n,g)=>/橘/.test(n)?"#d2691e":/耐衝擊/.test(n)?"#2f4f8f":(/灰色/.test(n)||g==="PVC管材")?"#6b737b":gColor(g);
