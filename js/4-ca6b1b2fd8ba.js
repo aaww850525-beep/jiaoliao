@@ -404,7 +404,7 @@ function renderOrder(){
    
    <label class="f" style="margin-top:12px">備註（會印在表單下方）<textarea data-f="note" rows="2">${esc(d.note)}</textarea></label>
   </div>
-  <div class="acts"><button class="btn btn-d" id="bClear">🗑 清空</button><button class="btn" id="bNew">📄 另開新單</button><button class="btn btn-g" id="bSave">💾 儲存到紀錄</button><button class="btn btn-p" id="bXls" ${d.lines.length?"":"disabled"}>⬇ 匯出 Excel</button><button class="btn btn-g" id="bXlsLine">Excel 至 LINE</button><button class="btn btn-p" id="bPdf" ${d.lines.length?"":"disabled"}>📄 預覽 PDF</button></div>
+  <div class="acts"><button class="btn btn-d" id="bClear">🗑 清空</button><button class="btn" id="bNew">📄 另開新單</button><button class="btn btn-g" id="bSave">💾 儲存到紀錄</button><button class="btn btn-p" id="bXls" ${d.lines.length?"":"disabled"}>⬇ 匯出 Excel</button><button class="btn btn-line" id="bXlsLine" ${d.lines.length?"":"disabled"}>📤 Excel 傳到 LINE</button><button class="btn btn-p" id="bPdf" ${d.lines.length?"":"disabled"}>📄 預覽 PDF</button></div>
   <p class="note" style="text-align:right">匯出 Excel 只會產生這一張叫料單（當月總表請到「紀錄」匯出）；「預覽 PDF」可先看列印樣式再下載。</p>`;
   v.oninput=e=>{const t=e.target;
     if(t.dataset.f){const was=d[t.dataset.f];d[t.dataset.f]=t.type==="number"?(t.value===""?"":+t.value):t.value;if(t.dataset.f==="project"&&t.value!==was){const np=S.projects.find(x=>x.name===t.value),op=S.projects.find(x=>x.name===was);const na=(np&&np.addr)||SITE_ADDR[t.value]||"";if(na&&(!d.addr||d.addr===((op&&op.addr)||SITE_ADDR[was]))){d.addr=na;const ai=v.querySelector("[data-f=addr]");if(ai)ai.value=na}}persist();return}
@@ -567,16 +567,19 @@ function openFilesDialog(title,body,actions=""){
   $("#filesClose").onclick=()=>filesDlg.close();
   if(!filesDlg.open)filesDlg.showModal();
 }
-function showShare(file,status){
+async function showShare(file,status){
   const data={files:[file]};
-  const supported=navigator.share&&navigator.canShare?.(data);
-  const message=supported?"開啟分享選單後選擇 LINE 和收件人。":"這個瀏覽器無法直接分享此格式。請先下載，再到 LINE 聊天室附加檔案。";
-  openFilesDialog("分享到 LINE",`<p>${esc(file.name)}</p><p>${esc(status)}</p><p>${message}</p><p id="shareStatus" role="status"></p>`,
-    '<button class="btn" id="filesDownload">下載檔案</button>'+(supported?'<button class="btn btn-g" id="shareNow">開啟分享選單</button>':""));
+  const supported=!!(navigator.share&&navigator.canShare?.(data));
+  if(supported){try{await navigator.share(data);return}catch(e){if(e.name==="AbortError")return}}
+  const steps=supported
+    ?'<ol class="lsteps"><li>按下面綠色的「📤 傳到 LINE」</li><li>在跳出來的選單點「LINE」</li><li>選要傳給誰，按「傳送」</li></ol>'
+    :'<ol class="lsteps"><li>按「⬇ 下載檔案」</li><li>打開 LINE 聊天室，按左下「＋」→「檔案」</li><li>選剛下載的 Excel 傳送</li></ol>';
+  openFilesDialog("傳到 LINE",`<p class="lfile">📄 ${esc(file.name)}</p>${steps}<p id="shareStatus" role="status"></p>`,
+    '<button class="btn" id="filesDownload">⬇ 下載檔案</button>'+(supported?'<button class="btn btn-line" id="shareNow">📤 傳到 LINE</button>':""));
   $("#filesDownload").onclick=()=>saveFile(file.name,file);
   if(supported)$("#shareNow").onclick=async()=>{
-    try{await navigator.share(data)}
-    catch(error){if(error.name!=="AbortError")$("#shareStatus").textContent="分享選單無法開啟。可下載後從 LINE 附加。"}
+    try{await navigator.share(data);filesDlg.close()}
+    catch(error){if(error.name!=="AbortError")$("#shareStatus").textContent="分享選單打不開，請改按「下載檔案」，再到 LINE 附加。"}
   };
 }
 if(hostedArchive){
