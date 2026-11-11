@@ -93,7 +93,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
       if(c.n==="鍍鋅鋼管・白鐵管・被覆管"){
         const sgp=menuCatalog.find(z=>z.n==="鍍鋅鋼管 SGP／ASTM");const sp=re=>sgp?sgp.items.filter(x=>re.test(x.it.n)):[];
         out.push({...c,g:"鐵管",n:"鍍鋅鋼管 CNS4626",items:pick(/^鍍鋅鋼管 CNS4626$/).concat(sp(/ASTM/))});
-        out.push({...c,g:"鐵管",n:"鍍鋅鋼管 CNS6445",items:sp(/CNS6445/).concat(pick(/^鍍鋅鋼管 白B管$/))});
+        out.push({...c,g:"鐵管",n:"鍍鋅鋼管 CNS6445",items:pick(/^鍍鋅鋼管 白B管$/).map(x=>({...x,it:{...x.it,n:"鍍鋅鋼管 6445"}}))});
         ["10S","20S","40S"].forEach(k=>out.push({...c,g:"不鏽鋼管",n:"不銹鋼管 "+k,items:pick(new RegExp("^不銹鋼管 "+k+"$"))}));
         out.push({...c,g:"不鏽鋼管",n:"不銹鋼管 其他厚度",items:pick(/^不銹鋼管 其他厚度$/)});
         out.push({...c,g:"不鏽鋼管",n:"不銹鋼壓接裸管・被覆管",items:pick(/^不銹鋼(壓接|被覆)/)});
