@@ -64,8 +64,9 @@ const PVC_LAB=Object.fromEntries(CATALOG.slice(PVC_NEW_START).filter(c=>c.lab).m
 const HI_PIPE_CI=CATALOG.findIndex(c=>c.hiPipe);
 const menuCatalog=CATALOG.flatMap((c,ci)=>{
   if(ci>=PVC_NEW_START)return [];
-  if(ci===0&&HI_PIPE_CI>0){const all=c.items.map((it,ii)=>({it,key:ci+"_"+ii}));const hc=CATALOG[HI_PIPE_CI];
-    return [{...c,items:all.filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n},
+  if(ci===0&&HI_PIPE_CI>0)return [{...c,n:"PVC灰色管",items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})).filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n}];
+  if(ci===1&&HI_PIPE_CI>0){const c0=CATALOG[0];const all=c0.items.map((it,ii)=>({it,key:"0_"+ii}));const hc=CATALOG[HI_PIPE_CI];
+    return [{...c,items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})),source:c.n},
       {...hc,items:hc.items.map((it,ii)=>({it,key:HI_PIPE_CI+"_"+ii})).concat(all.filter(({it})=>it.n.startsWith("HI耐衝擊管 可撓性"))),source:hc.n}];}
   if(PVC_OLD.has(ci))return ci===2?CATALOG.map((c2,j)=>[c2,j]).filter(([c2])=>c2.pvc2022).map(([c2,j])=>({...c2,items:c2.items.map((it,ii)=>({it,key:j+"_"+ii})),source:c2.n})):[];
   const indexed=c.items.map((it,ii)=>({it,key:ci+"_"+ii}));
