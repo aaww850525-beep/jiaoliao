@@ -404,7 +404,7 @@ function renderOrder(){
    
    <label class="f" style="margin-top:12px">備註（會印在表單下方）<textarea data-f="note" rows="2">${esc(d.note)}</textarea></label>
   </div>
-  <div class="acts"><button class="btn btn-d" id="bClear">🗑 清空</button><button class="btn" id="bNew">📄 另開新單</button><button class="btn btn-g" id="bSave">💾 儲存到紀錄</button><button class="btn btn-p" id="bXls" ${d.lines.length?"":"disabled"}>⬇ 匯出 Excel</button><button class="btn btn-line" id="bXlsLine" ${d.lines.length?"":"disabled"}>📤 Excel 傳到 LINE</button><button class="btn btn-p" id="bPdf" ${d.lines.length?"":"disabled"}>📄 預覽 PDF</button></div>
+  <div class="acts"><button class="btn btn-d" id="bClear">🗑 清空</button><button class="btn" id="bNew">📄 另開新單</button><button class="btn btn-g" id="bSave">💾 儲存到紀錄</button><button class="btn btn-p" id="bXls" ${d.lines.length?"":"disabled"}>⬇ 匯出 Excel</button><button class="btn btn-p" id="bPdf" ${d.lines.length?"":"disabled"}>📄 預覽 PDF</button></div>
   <p class="note" style="text-align:right">匯出 Excel 只會產生這一張叫料單（當月總表請到「紀錄」匯出）；「預覽 PDF」可先看列印樣式再下載。</p>`;
   v.oninput=e=>{const t=e.target;
     if(t.dataset.f){const was=d[t.dataset.f];d[t.dataset.f]=t.type==="number"?(t.value===""?"":+t.value):t.value;if(t.dataset.f==="project"&&t.value!==was){const np=S.projects.find(x=>x.name===t.value),op=S.projects.find(x=>x.name===was);const na=(np&&np.addr)||SITE_ADDR[t.value]||"";if(na&&(!d.addr||d.addr===((op&&op.addr)||SITE_ADDR[was]))){d.addr=na;const ai=v.querySelector("[data-f=addr]");if(ai)ai.value=na}}persist();return}
