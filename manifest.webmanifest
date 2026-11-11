@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "工程叫料小幫手",
+  "short_name": "工程叫料小幫手",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f4f8",
+  "theme_color": "#2f5a1c",
+  "description": "工程選料、叫料單、Excel 與 PDF 匯出",
+  "icons": [
+    {
+      "src": "app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
