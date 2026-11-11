@@ -425,7 +425,7 @@ function renderOrder(){
     if(t.id==="bAdd"||t.id==="bAdd2")go("menu");
     if(t.id==="bCustom")customDlg();
     if(false&&t.id==="bReprice"){const k=+d.discount||1;d.lines.forEach(l=>{if(isNum(l.list))l.price=Math.round(l.list*k*100)/100});persist();renderOrder();toast("已依折數 "+k+" 重算單價")}
-    if(t.id==="bClear")confirmDlg("清空這張叫料單的所有材料？",()=>{d.lines=[];persist();renderOrder();updateCart()});
+    if(t.id==="bClear")confirmDlg("真的要清空嗎？🥺 單子上的材料會全部不見喔～",()=>{d.lines=[];persist();renderOrder();updateCart()});
     if(t.id==="bNew")confirmDlg("另開一張新叫料單？目前這張會先存到紀錄。",()=>{saveOrder(true);P().draft=newOrder(P());persist();renderAll();toast("已開新單")});
     if(t.id==="bSave"){saveOrder();toast("已儲存到紀錄："+d.no)}
     if(t.id==="bXls")exportXlsx(d);if(t.id==="bXlsLine")exportXlsx(d,false,true);
