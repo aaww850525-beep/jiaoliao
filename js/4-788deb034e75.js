@@ -61,9 +61,13 @@ const carbonCategory=CATALOG.find(c=>c.n==="碳鋼有縫焊另件 20S/40S（黑�
 const grooveCategories=new Set(CATALOG.filter(c=>c.g===carbonCategory.g&&/溝槽/.test(c.n)).map(c=>c.n));
 const PVC_NEW_START=90;const PVC_OLD=new Set([2, 3, 4, 5, 6]);
 const PVC_LAB=Object.fromEntries(CATALOG.slice(PVC_NEW_START).filter(c=>c.lab).map(c=>[c.n,c.lab]));
+const HI_PIPE_CI=CATALOG.findIndex(c=>c.hiPipe);
 const menuCatalog=CATALOG.flatMap((c,ci)=>{
   if(ci>=PVC_NEW_START)return [];
-  if(PVC_OLD.has(ci))return ci===2?CATALOG.slice(PVC_NEW_START).map((c2,j)=>({...c2,items:c2.items.map((it,ii)=>({it,key:(PVC_NEW_START+j)+"_"+ii})),source:c2.n})):[];
+  if(ci===0&&HI_PIPE_CI>0){const all=c.items.map((it,ii)=>({it,key:ci+"_"+ii}));const hc=CATALOG[HI_PIPE_CI];
+    return [{...c,items:all.filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n},
+      {...hc,items:hc.items.map((it,ii)=>({it,key:HI_PIPE_CI+"_"+ii})).concat(all.filter(({it})=>it.n.startsWith("HI耐衝擊管 可撓性"))),source:hc.n}];}
+  if(PVC_OLD.has(ci))return ci===2?CATALOG.map((c2,j)=>[c2,j]).filter(([c2])=>c2.pvc2022).map(([c2,j])=>({...c2,items:c2.items.map((it,ii)=>({it,key:j+"_"+ii})),source:c2.n})):[];
   const indexed=c.items.map((it,ii)=>({it,key:ci+"_"+ii}));
   if(c===carbonCategory){
     return ["黑鐵","電白","熱浸"].map(finish=>({ ...c, n:finish+"焊接另件 20S/40S", g:finish+"焊接另件",
