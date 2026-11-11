@@ -618,7 +618,7 @@ function b64buf(b){const s=atob(b);const u=new Uint8Array(s.length);for(let i=0;
 const dt=s=>{if(!s)return null;const [y,m,d]=s.split("-").map(Number);return new Date(Date.UTC(y,m-1,d))};
 function fillOrderSheet(ws,d){
   const st=S.settings;
-  ws.getCell("A1").value=d.company||(COMPANIES.includes(st.company)?st.company:COMPANIES[0]);ws.getCell("A3").value=(st.title||"材料叫料單")+(d.no?"　No. "+d.no:"");
+  ws.getCell("A1").value=d.company||(COMPANIES.includes(st.company)?st.company:COMPANIES[0]);ws.getCell("A3").value=(st.title&&st.title!=="材料叫料單"?st.title:"材料出貨單");
   ws.getCell("B5").value=d.project||"";ws.getCell("G5").value=dt(d.orderDate);ws.getCell("G6").value=dt(d.dueDate);
   ws.getCell("B6").value=["工務所","工地","自取"].map(m=>(d.mode===m?"█":"□")+m).join("  ");
   ws.getCell("B7").value=d.addr||"";
@@ -637,11 +637,11 @@ function fillOrderSheet(ws,d){
     row.getCell(1).value=l?i+1:null;
     if(!l){for(let c=2;c<=7;c++)row.getCell(c).value=null;continue}
     const name=lineName(l);
-    const b=row.getCell(2);b.value=name;b.alignment=Object.assign({},b.alignment,{wrapText:true,horizontal:"left",vertical:"middle"});b.font=Object.assign({},b.font,{size:10});
+    const b=row.getCell(2);b.value=name;b.alignment=Object.assign({},b.alignment,{wrapText:true,horizontal:"left",vertical:"middle"});b.font=Object.assign({},b.font,{size:13});
     row.getCell(3).value=l.unit||"";row.getCell(4).value=+l.qty||0;
     row.getCell(5).value=null;row.getCell(6).value=null;
     const g=row.getCell(7);g.value=l.remark||"";g.font=Object.assign({},g.font,{size:11});g.alignment=Object.assign({},g.alignment,{wrapText:true});
-    const len=name.length;if(len>20)row.height=Math.min(54,15*Math.ceil(len/20)+4);
+    const len=name.length;if(len>14)row.height=Math.min(80,19*Math.ceil(len/14)+4);
   }
   ws.getCell(`A${noteR}`).value=(d.note?"備註："+d.note:"備註：")+(d.arrival?`　到貨狀況：${d.arrival}`:"");
   ws.getCell(`A${noteR}`).alignment={horizontal:"left",vertical:"middle",wrapText:true};
@@ -733,9 +733,9 @@ async function exportMonth(month){
 // ---------- PDF (preview + download) ----------
 function fmtDate(s){if(!s)return "";const [y,m,dd]=s.split("-").map(Number);return `${y-1911}年${m}月${dd}日`}
 const FIRST_ROWS=32,NEXT_ROWS=46;
-function lineName(l){const name=materialName(l);if(name!==l.name)return [name,l.size,l.spec].filter(Boolean).join(" ");return [l.cat&&l.cat!=="自訂"&&!/^PVC/.test(l.name)?l.cat.replace(/^PVC另件・/,"PVC ").replace(/另件$/,""):"",l.name,l.size,l.spec].filter(Boolean).join(" ")}
+function lineName(l){const name=materialName(l);if(name!==l.name)return [name,l.size,l.spec].filter(Boolean).join(" ");return [l.cat&&l.cat!=="自訂"&&!/^PVC/.test(l.name)&&!/^(鍍鋅鋼管・白鐵管・被覆管|鍍鋅鋼管 SGP|CIP |ACI |EMT／RSG)/.test(l.cat)?l.cat.replace(/^PVC另件・/,"PVC ").replace(/另件$/,""):"",l.name,l.size,l.spec].filter(Boolean).join(" ")}
 function buildPages(d){
-  const st=S.settings;const company=d.company||st.company||"";const title=st.title||"材料叫料單";
+  const st=S.settings;const company=d.company||st.company||"";const title=(st.title&&st.title!=="材料叫料單"?st.title:"材料出貨單");
   const box=on=>on?"■":"□";
   const mode=["工務所","工地","自取"].map(m=>`${d.mode===m?"█":"□"}${m}`).join("　");
   const docs1=["保固書","測試報告","進口證明及銷售證明","中文操作說明"].map(x=>box(d.docs.includes(x))+x).join(" ");
