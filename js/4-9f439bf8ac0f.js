@@ -405,7 +405,7 @@ function renderOrder(){
    <label class="f" style="margin-top:12px">備註（會印在表單下方）<textarea data-f="note" rows="2">${esc(d.note)}</textarea></label>
   </div>
   <div class="acts"><button class="btn btn-d" id="bClear">🗑 清空</button><button class="btn" id="bNew">📄 另開新單</button><button class="btn btn-g" id="bSave">💾 儲存到紀錄</button><button class="btn btn-p" id="bXls" ${d.lines.length?"":"disabled"}>⬇ 匯出 Excel</button><button class="btn btn-g" id="bXlsLine">Excel 至 LINE</button><button class="btn btn-p" id="bPdf" ${d.lines.length?"":"disabled"}>📄 預覽 PDF</button></div>
-  <p class="note" style="text-align:right">匯出 Excel 會產生「當月總表」＋各張出貨單分頁；「預覽 PDF」可先看列印樣式再下載。</p>`;
+  <p class="note" style="text-align:right">匯出 Excel 只會產生這一張叫料單（當月總表請到「紀錄」匯出）；「預覽 PDF」可先看列印樣式再下載。</p>`;
   v.oninput=e=>{const t=e.target;
     if(t.dataset.f){const was=d[t.dataset.f];d[t.dataset.f]=t.type==="number"?(t.value===""?"":+t.value):t.value;if(t.dataset.f==="project"&&t.value!==was){const np=S.projects.find(x=>x.name===t.value),op=S.projects.find(x=>x.name===was);const na=(np&&np.addr)||SITE_ADDR[t.value]||"";if(na&&(!d.addr||d.addr===((op&&op.addr)||SITE_ADDR[was]))){d.addr=na;const ai=v.querySelector("[data-f=addr]");if(ai)ai.value=na}}persist();return}
     if(t.dataset.doc){d.docs=DOCS.filter(x=>v.querySelector(`[data-doc="${x}"]`).checked);persist();return}
@@ -694,20 +694,19 @@ function buildSummary(ws,orders,proj){
   ws.views=[{state:"frozen",ySplit:7}];
   ws.pageSetup={paperSize:9,orientation:"portrait",fitToPage:true,fitToWidth:1,fitToHeight:0,printArea:`A1:H${r-1}`,printTitlesRow:"7:7"};
 }
-async function exportWorkbook(p,month,extra,share){
-  const map=new Map();p.orders.filter(o=>monthOf(o.orderDate)===month).forEach(o=>map.set(o.id,o));
+async function exportWorkbook(p,month,extra,share,single){
+  const map=new Map();if(!single)p.orders.filter(o=>monthOf(o.orderDate)===month).forEach(o=>map.set(o.id,o));
   if(extra&&monthOf(extra.orderDate)===month)map.set(extra.id,extra);
   const orders=[...map.values()].filter(o=>o.lines.length).sort((a,b)=>(a.orderDate||"").localeCompare(b.orderDate||"")||(a.no||"").localeCompare(b.no||""));
   if(!orders.length){toast("這個月份沒有叫料紀錄");return false}
   const wb=new ExcelJS.Workbook();await wb.xlsx.load(b64buf(TPL_B64));
   const tpl=wb.worksheets[0];
-  const sum=wb.addWorksheet("總表");buildSummary(sum,orders,orders[orders.length-1].project||p.name);
-  const used=new Set(["總表"]);
+  const used=new Set();if(!single){const sum=wb.addWorksheet("總表");buildSummary(sum,orders,orders[orders.length-1].project||p.name);used.add("總表")}
   [...orders].reverse().forEach(o=>{let nm=rocSheet(o.orderDate),k=2;while(used.has(nm))nm=rocSheet(o.orderDate)+`(${k++})`;used.add(nm);fillOrderSheet(cloneSheet(wb,tpl,nm),o)});
   wb.removeWorksheet(tpl.id);
   const buf=await wb.xlsx.writeBuffer();
   const [yy,mm]=month.split("-");
-  const fn=`${(p.name||"").replace(/[\\/:*?"<>|]/g,"")}_${+yy-1911}.${mm}_材料出貨單總表.xlsx`;
+  const fn=single?`${(p.name||"").replace(/[\\/:*?"<>|]/g,"")}_${rocSheet(extra.orderDate)}_叫料單${extra.no?"_"+String(extra.no).replace(/[\\/:*?"<>|]/g,""):""}.xlsx`:`${(p.name||"").replace(/[\\/:*?"<>|]/g,"")}_${+yy-1911}.${mm}_材料出貨單總表.xlsx`;
   const file=new File([buf],fn,{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
   const status=await archiveFile(extra?.project||p.name,file);
   if(share){showShare(file,status);return true}
@@ -721,7 +720,7 @@ async function exportXlsx(d,fromHist,share){
   if(!fromHist&&!d.no)d.no=genNo(d);
   try{
     const p=S.projects.find(x=>x.orders.some(o=>o.id===d.id))||P();
-    const ok=await exportWorkbook(p,monthOf(d.orderDate),d,share);
+    const ok=await exportWorkbook(p,monthOf(d.orderDate),d,share,true);
     if(ok&&!fromHist&&d.id===draft().id){draft().exported=true;saveOrder()}
   }catch(err){console.error(err);toast("匯出失敗："+(err&&err.message||err))}
 }
