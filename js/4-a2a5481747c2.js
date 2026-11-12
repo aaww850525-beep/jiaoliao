@@ -108,6 +108,13 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
       out.push({...c,items:c.items.filter(x=>!/^ACI/.test(x.it.n))});if(a.length)out.push({...c,g:"ACI",n:"ACI 粉體塗裝導線管 EMT／RSG",items:a});return;}
     out.push(c);
   });
+  {const PIPE=/^(EMT 無螺紋導線管|RSG 厚鋼導線管|C80\.1|CD管$|PF管$|CW |鍍鋅裸管|防水金屬浪管|鋼絲浪管)/;
+   const REN={"EMT／RSG 導線管・另件":"EMT／RSG 另件","CD管・PF管（合成樹脂可撓性電線導管）":"CD管・PF管 另件","金屬軟管（電氣配管類）・配件":"金屬軟管 配件"};
+   const pipes=[];let at=-1;
+   for(let i=0;i<out.length;i++){const c=out[i];if(c.g!=="電管"||!REN[c.n])continue;if(at<0)at=i;
+     pipes.push(...c.items.filter(x=>PIPE.test(x.it.n)));out[i]={...c,n:REN[c.n],items:c.items.filter(x=>!PIPE.test(x.it.n))};}
+   for(let i=out.length-1;i>=0;i--){if(out[i].g==="電管"&&out[i].n==="PE浪管"){pipes.push(...out[i].items);out.splice(i,1);if(i<at)at--;}}
+   if(at>=0&&pipes.length)out.splice(at,0,{...out[at],n:"電管 管材",items:pipes});}
   const first=[...new Set(out.map(c=>c.g||"其他"))];
   const order=[];first.forEach(g=>{
     if(g==="ACI")return;
