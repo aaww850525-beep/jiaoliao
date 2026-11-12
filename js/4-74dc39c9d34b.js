@@ -396,16 +396,16 @@ function renderOrder(){
     <label class="f">到貨狀況<input data-f="arrival" list="arrList" value="${esc(d.arrival||"")}" placeholder="例如：已到貨、部分到貨"><datalist id="arrList"><option>未到貨</option><option>部分到貨</option><option>已到貨</option></datalist></label>
     <div class="f full"><label class="f" style="margin:0">交貨方式</label><div class="opts">${["工務所","工地","自取"].map(m=>`<label><input type="radio" name="mode" value="${m}" ${d.mode===m?"checked":""}> ${m}</label>`).join("")}</div></div>
     <label class="f full">交貨地點（地址）<input data-f="addr" value="${esc(d.addr)}" placeholder="例如：新竹縣湖口鄉…"></label>
-    <label class="f">公司聯絡人<input data-f="contact" value="${esc(d.contact)}"></label>
-    <label class="f">聯絡人電話<input data-f="contactTel" value="${esc(d.contactTel)}" inputmode="tel"></label>
+    <label class="f">收貨人<input data-f="contact" value="${esc(d.contact)}"></label>
+    <label class="f">收貨人電話<input data-f="contactTel" value="${esc(d.contactTel)}" inputmode="tel"></label>
     <div class="f full"><label class="f" style="margin:0">附查驗用證明文件</label><div class="opts">${DOCS.map(x=>`<label><input type="checkbox" data-doc="${x}" ${d.docs.includes(x)?"checked":""}> ${x}</label>`).join("")}<input data-f="docOther" value="${esc(d.docOther)}" placeholder="其它說明" style="border:1px solid #d1d5db;border-radius:8px;padding:4px 8px;min-width:120px"></div></div>
    </div></div>
-  <div class="card"><div class="sec">🏭 廠商</div><div class="grid">
+  <details class="card vend" ${window.__vendOpen?"open":""} ontoggle="window.__vendOpen=this.open"><summary class="sec">🏭 廠商<span class="vsum">${esc(d.vendor||"")}</span><span class="vchev">點我展開 ▾</span></summary><div class="grid">
     <label class="f">廠商名稱<input data-f="vendor" value="${esc(d.vendor)}"></label>
     <label class="f">廠商聯絡人<input data-f="vendorContact" value="${esc(d.vendorContact)}"></label>
     <label class="f">公司電話<input data-f="vendorTel" value="${esc(d.vendorTel)}"></label>
     <label class="f">公司傳真<input data-f="vendorFax" value="${esc(d.vendorFax)}"></label>
-  </div></div>
+  </div></details>
   <div class="card"><div class="sec">🧺 材料明細（${d.lines.length} 項）<span class="sp"></span><button class="btn" id="bAdd">＋ 繼續點料</button><button class="btn" id="bCustom">＋ 自訂品項</button></div>
    ${d.lines.length?lines:`<div class="empty">還沒有選材料<br><button class="btn btn-g" id="bAdd2" style="margin-top:10px">去點料 ›</button></div>`}
    
@@ -541,7 +541,7 @@ $("#bSet").onclick=()=>{const D=$("#dlg");const st=S.settings;
   const fld=(k,l,t)=>`<label class="f ${t||""}">${l}<input name="${k}" value="${esc(st[k])}"></label>`;
   D.innerHTML=`<form id="sf"><div class="sh-h"><h2>⚙ 設定</h2><small>新叫料單的預設值（Excel 抬頭、廠商、聯絡人）</small><button type="button" class="sh-x" data-close>✕</button></div>
   <div class="sh-b"><div class="grid"><label class="f full">預設公司名稱<select name="company">${COMPANIES.map(n=>`<option ${n===st.company?"selected":""}>${esc(n)}</option>`).join("")}</select></label>${fld("title","表單標題")}
-  ${fld("contact","公司聯絡人")}${fld("contactTel","聯絡人電話")}${fld("vendor","預設廠商","full")}${fld("vendorContact","廠商聯絡人")}${fld("vendorTel","廠商電話")}${fld("vendorFax","廠商傳真")}</div>
+  ${fld("contact","預設收貨人")}${fld("contactTel","收貨人電話")}${fld("vendor","預設廠商","full")}${fld("vendorContact","廠商聯絡人")}${fld("vendorTel","廠商電話")}${fld("vendorFax","廠商傳真")}</div>
   <p class="note">只影響之後新開的叫料單；目前這張可直接在叫料單頁修改。</p></div>
   <div class="sh-f"><button class="btn btn-p">儲存</button></div></form>`;
   D.oninput=null;D.onclose=null;D.onclick=e=>{if(e.target.closest("[data-close]"))D.close()};
@@ -629,7 +629,7 @@ function fillOrderSheet(ws,d){
   ws.getCell("B5").value=d.project||"";ws.getCell("G5").value=dt(d.orderDate);ws.getCell("G6").value=dt(d.dueDate);
   ws.getCell("B6").value=["工務所","工地","自取"].map(m=>(d.mode===m?"█":"□")+m).join("  ");
   ws.getCell("B7").value=d.addr||"";
-  ws.getCell("G7").value=[d.contact,d.contactTel].filter(Boolean).join(" ")||"";
+  ws.getCell("F7").value="收貨人";ws.getCell("G7").value=[d.contact,d.contactTel].filter(Boolean).join(" ")||"";
   const ck=x=>(d.docs.includes(x)?"■":"□")+x;
   ws.getCell("B8").value=["保固書","測試報告","進口證明及銷售證明","中文操作說明"].map(ck).join(" ");
   ws.getCell("B9").value=["竣工圖","出廠證明","產地證明"].map(ck).join(" ")+" "+ck("其它")+"︰"+(d.docOther||"");
@@ -765,7 +765,7 @@ function buildPages(d){
   <table class="ph"><colgroup><col style="width:13%"><col style="width:52%"><col style="width:15%"><col style="width:20%"></colgroup>
    <tr><th>工程名稱</th><td>${esc(d.project||"")}</td><th>訂貨日期</th><td class="c">${fmtDate(d.orderDate)}</td></tr>
    <tr><th>交貨地點</th><td>${mode}</td><th>預定交貨日期</th><td class="c">${fmtDate(d.dueDate)}</td></tr>
-   <tr><th>交貨地點</th><td>${esc(d.addr||"")}</td><th>公司聯絡人</th><td class="c">${esc([d.contact,d.contactTel].filter(Boolean).join(" "))}</td></tr>
+   <tr><th>交貨地點</th><td>${esc(d.addr||"")}</td><th>收貨人</th><td class="c">${esc([d.contact,d.contactTel].filter(Boolean).join(" "))}</td></tr>
    <tr><th rowspan="2">附查驗用<br>證明文件</th><td colspan="3" class="sm">${docs1}</td></tr>
    <tr><td colspan="3" class="sm">${docs2}</td></tr>
    <tr><th rowspan="2">廠商名稱</th><td rowspan="2">${esc(d.vendor||"")}${d.vendorContact?`<br><span class="sm">聯絡人：${esc(d.vendorContact)}</span>`:""}</td><th>公司電話</th><td class="c">${esc(d.vendorTel||"")}</td></tr>
