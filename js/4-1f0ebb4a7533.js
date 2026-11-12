@@ -740,7 +740,7 @@ async function exportMonth(month){
 // ---------- PDF (preview + download) ----------
 function fmtDate(s){if(!s)return "";const [y,m,dd]=s.split("-").map(Number);return `${y-1911}年${m}月${dd}日`}
 const FIRST_ROWS=32,NEXT_ROWS=46;
-function lineName(l){const name=materialName(l);if(name!==l.name)return [name,l.size,l.spec].filter(Boolean).join(" ");return [l.cat&&l.cat!=="自訂"&&!/^PVC/.test(l.name)&&!/^(鍍鋅鋼管・白鐵管・被覆管|鍍鋅鋼管 SGP|CIP |ACI |EMT／RSG)/.test(l.cat)?l.cat.replace(/^PVC另件・/,"PVC ").replace(/另件$/,""):"",l.name,l.size,l.spec].filter(Boolean).join(" ")}
+function lineName(l){const name=materialName(l);if(name!==l.name)return [name,l.size,l.spec].filter(Boolean).join(" ");return [false&&l.cat?l.cat.replace(/^PVC另件・/,"PVC ").replace(/另件$/,""):"",l.name,l.size,l.spec].filter(Boolean).join(" ")}
 function buildPages(d){
   const st=S.settings;const company=d.company||st.company||"";const title=(st.title&&st.title!=="材料叫料單"?st.title:"材料出貨單");
   const box=on=>on?"■":"□";
@@ -779,7 +779,7 @@ const PRINT_CSS=`.pg{width:794px;height:1122px;background:#fff;color:#000;box-si
 .ph{border:2.5px double #000;border-bottom:0}.ph th,.ph td{border:1px solid #000;padding:4px 6px;font-size:13px;height:24px;vertical-align:middle}
 .ph th{font-weight:400;text-align:center;white-space:nowrap}
 .pi{border:2.5px double #000}.pi th{border:1px solid #000;font-weight:400;font-size:13.5px;padding:3px;text-align:center}
-.pi td{border:1px solid #000;font-size:11.5px;padding:1px 5px;height:21px;vertical-align:middle;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pi td{border:1px solid #000;font-size:11.5px;padding:1px 5px;height:21px;vertical-align:middle;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.pi td.nm{white-space:normal;line-height:1.25;word-break:break-all}
 .c{text-align:center}.rm{font-size:10.5px}.sm{font-size:11.5px}
 .pn{border:2.5px double #000;border-top:0;padding:6px 8px;font-size:12.5px;min-height:26px}
 .pf{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:11px;color:#555}`;
