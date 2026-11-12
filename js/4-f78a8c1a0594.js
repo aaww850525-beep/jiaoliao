@@ -629,7 +629,7 @@ function fillOrderSheet(ws,d){
   ws.getCell("B5").value=d.project||"";ws.getCell("G5").value=dt(d.orderDate);ws.getCell("G6").value=dt(d.dueDate);
   ws.getCell("B6").value=["工務所","工地","自取"].map(m=>(d.mode===m?"█":"□")+m).join("  ");
   ws.getCell("B7").value=d.addr||"";
-  ws.getCell("F7").value="收貨人";ws.getCell("G7").value=[d.contact,d.contactTel].filter(Boolean).join(" ")||"";
+  ws.getCell("F7").value="收貨人";ws.getCell("G7").value=d.contact||"";ws.getCell("F8").value="收貨人電話";ws.getCell("G8").value=d.contactTel||"";["F","G"].forEach(c=>{ws.getCell(c+"8").alignment=JSON.parse(JSON.stringify(ws.getCell(c+"7").alignment||{}));ws.getCell(c+"8").font=JSON.parse(JSON.stringify(ws.getCell(c+"7").font||{}))});
   const ck=x=>(d.docs.includes(x)?"■":"□")+x;
   ws.getCell("B8").value=["保固書","測試報告","進口證明及銷售證明","中文操作說明"].map(ck).join(" ");
   ws.getCell("B9").value=["竣工圖","出廠證明","產地證明"].map(ck).join(" ")+" "+ck("其它")+"︰"+(d.docOther||"");
@@ -765,8 +765,8 @@ function buildPages(d){
   <table class="ph"><colgroup><col style="width:13%"><col style="width:52%"><col style="width:15%"><col style="width:20%"></colgroup>
    <tr><th>工程名稱</th><td>${esc(d.project||"")}</td><th>訂貨日期</th><td class="c">${fmtDate(d.orderDate)}</td></tr>
    <tr><th>交貨地點</th><td>${mode}</td><th>預定交貨日期</th><td class="c">${fmtDate(d.dueDate)}</td></tr>
-   <tr><th>交貨地點</th><td>${esc(d.addr||"")}</td><th>收貨人</th><td class="c">${esc([d.contact,d.contactTel].filter(Boolean).join(" "))}</td></tr>
-   <tr><th rowspan="2">附查驗用<br>證明文件</th><td colspan="3" class="sm">${docs1}</td></tr>
+   <tr><th>交貨地點</th><td>${esc(d.addr||"")}</td><th>收貨人</th><td class="c">${esc(d.contact||"")}</td></tr>
+   <tr><th rowspan="2">附查驗用<br>證明文件</th><td class="sm">${docs1}</td><th>收貨人電話</th><td class="c">${esc(d.contactTel||"")}</td></tr>
    <tr><td colspan="3" class="sm">${docs2}</td></tr>
    <tr><th rowspan="2">廠商名稱</th><td rowspan="2">${esc(d.vendor||"")}${d.vendorContact?`<br><span class="sm">聯絡人：${esc(d.vendorContact)}</span>`:""}</td><th>公司電話</th><td class="c">${esc(d.vendorTel||"")}</td></tr>
    <tr><th>公司傳真</th><td class="c">${esc(d.vendorFax||"")}</td></tr></table>`
