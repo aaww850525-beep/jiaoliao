@@ -132,6 +132,14 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
      pipes.push(...c.items.filter(x=>PIPE.test(x.it.n)));out[i]={...c,n:REN[c.n],items:c.items.filter(x=>!PIPE.test(x.it.n))};}
    for(let i=out.length-1;i>=0;i--){if(out[i].g==="電管"&&out[i].n==="PE浪管"){pipes.push(...out[i].items);out.splice(i,1);if(i<at)at--;}}
    if(at>=0&&pipes.length)out.splice(at,0,{...out[at],n:"電管 管材",items:pipes});}
+  {const pi=out.findIndex(c=>c.items.some(x=>x.it.nw&&x.it.n==="排水管蓋（淺管帽）"));const yi=out.findIndex(c=>c.n==="塑膠另件・預埋・伸縮・止水");
+   if(pi>=0&&yi>=0){const P=out[pi],Y=out[yi];const get=n=>P.items.find(x=>x.it.n===n);
+     const kas=Y.items.find(x=>x.it.n==="卡式伸縮套管");
+     const head=["伸縮套管 10cm","伸縮套管 12cm","伸縮套管 15cm"].map(get).filter(Boolean);
+     const rest=Y.items.filter(x=>!/^(PVC伸縮套管|卡式伸縮套管)$/.test(x.it.n));
+     const tail=["排水管蓋（淺管帽）","饅頭（平頂塞口）"].map(get).filter(Boolean);
+     out[yi]={...Y,items:[...head,...(kas?[{...kas,it:{...kas.it,n:"卡式套管"}}]:[get("卡式套管")].filter(Boolean)),...rest,...tail]};
+     out.splice(pi,1);}}
   const first=[...new Set(out.map(c=>c.g||"其他"))];
   const order=[];first.forEach(g=>{
     if(g==="ACI")return;
@@ -220,7 +228,7 @@ function renderMenu(){
 function inCartCount(itemKey){return draft().lines.filter(l=>l.ik===itemKey).length}
 const menuCategoryByItem=new Map(ITEMS.map(x=>[x.key,x.ci]));
 function catCount(pred){return draft().lines.filter(l=>menuCategoryByItem.has(l.ik)&&pred(menuCategoryByItem.get(l.ik))).length}
-const itemImageKey=x=>x.cat+"|"+x.it.n;
+const itemImageKey=x=>x.cat+"|"+x.it.n;try{const _k="塑膠另件・預埋・伸縮・止水|排水管蓋（淺管帽）",_o="PVC套龍口・配管另件|排水管蓋（淺管帽）";if(!AI_IMAGES[_k]&&AI_IMAGES[_o])AI_IMAGES[_k]=AI_IMAGES[_o]}catch(e){}
 const itemImage=x=>AI_IMAGES[itemImageKey(x)]||imgOf(IMG.ITEM[itemImageKey(x)]);
 const isIllustration=x=>Boolean(AI_IMAGES[itemImageKey(x)]);
 const imgOf=k=>k&&IMG.IC[k]?IMG.IC[k]:"";
