@@ -164,7 +164,7 @@ const vKey=(itemKey,vi)=>itemKey+"|"+vi;
 let siteChosen=false;
 function renderProj(){const s=$("#proj");s.innerHTML=(siteChosen?"":'<option value="" selected disabled>請選擇工地</option>')+S.projects.map(p=>`<option value="${p.id}" ${siteChosen&&p.id===S.cur?"selected":""}>${esc(p.name)}</option>`).join("");s.classList.toggle("need",!siteChosen)}
 $("#proj").onchange=e=>{if(!e.target.value)return;S.cur=e.target.value;siteChosen=true;persist();renderAll()};
-document.addEventListener("click",e=>{if(siteChosen)return;const t=e.target.closest("#vMenu .tile,.tab[data-v=order],.tab[data-v=hist],#cbGo");if(!t)return;e.preventDefault();e.stopPropagation();toast("請先選擇目前工地");const p=$("#proj");p.classList.remove("blink");void p.offsetWidth;p.classList.add("blink");openSitePicker()},true);
+document.addEventListener("click",e=>{if(siteChosen)return;const t=e.target.closest("#vMenu .tile,.tab[data-v=order],.tab[data-v=hist],#cbGo");if(!t)return;e.preventDefault();e.stopPropagation();toast("請先選擇目前工地");const p=$("#proj");p.classList.remove("blink");void p.offsetWidth;p.classList.add("blink");const pc=document.querySelector(".project-context");pc.classList.remove("blink");void pc.offsetWidth;pc.classList.add("blink")},true);
 $("#appTools").addEventListener("click",e=>{if(e.target.closest("button"))$("#appTools").open=false});
 const SP=document.createElement("dialog");SP.id="sitePick";document.body.appendChild(SP);
 const CO_ORDER=["聖和工程有限公司","紘誠水電工程行","澧育有限公司","白鐵工程行"];
@@ -176,7 +176,6 @@ function openSitePicker(){const gs={};S.projects.forEach(p=>{const c=siteCo(p.na
   SP.oncancel=e=>{if(!siteChosen)e.preventDefault()};
   if(!SP.open)SP.showModal();SP.querySelector(".sp-b").scrollTop=0}
 document.querySelector(".project-context").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openSitePicker()},true);
-setTimeout(()=>{if(!siteChosen)openSitePicker()},400);
 
 
 // ---------- menu (tile style) ----------
