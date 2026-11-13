@@ -138,6 +138,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
     else if(g==="牙件"||g==="壓接另件"||g==="焊件"){if(!order.includes("牙件"))order.push("牙件","焊件","壓接另件");}
     else if(!order.includes(g))order.push(g);
   });
+  const mv=(g,after)=>{const i=order.indexOf(g);if(i<0||!order.includes(after))return;order.splice(i,1);order.splice(order.indexOf(after)+1,0,g)};mv("ACI","軟管・防震接頭");mv("五金另料","法蘭・墊片");
   out.sort((a,b)=>order.indexOf(a.g||"其他")-order.indexOf(b.g||"其他"));
   menuCatalog.length=0;menuCatalog.push(...out);
 })();
