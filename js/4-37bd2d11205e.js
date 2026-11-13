@@ -143,7 +143,8 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   menuCatalog.length=0;menuCatalog.push(...out);
 })();
 function materialName(line){
-  if(line.ik&&+String(line.ik).split("_")[0]>=PVC_NEW_START&&PVC_LAB[line.cat])return PVC_LAB[line.cat]+" "+line.name;
+  if(line.ik&&+String(line.ik).split("_")[0]>=PVC_NEW_START&&PVC_LAB[line.cat])return (line.brand?PVC_LAB[line.cat].replace(/^南亞/,line.brand):PVC_LAB[line.cat])+" "+line.name;
+  if(line.brand&&CATALOG.some(c=>c.g==="PVC另件"&&c.n===line.cat))return line.brand+" "+line.name;
   if(CATALOG.some(c=>c.g==="PVC管材"&&c.n===line.cat))
     return (line.brand||"廠牌未指定")+" "+line.name;
   if(line.name.startsWith("加強型套龍口"))return line.name.replace(/^加強型/,"");
@@ -298,7 +299,7 @@ function itemDlg(key,initialSpec){
   const shn=()=>{$("#shn").textContent=total()?`此品項已選 ${total()} 種規格`:"輸入數量即加入叫料單"};shn();
   let changed=false;
   D.onclick=e=>{
-    if(e.target.closest("[data-close]")){if(changed&&x.g==="PVC管材"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
+    if(e.target.closest("[data-close]")){if(changed&&(x.g==="PVC管材"||(x.g==="PVC另件"&&!/^塑膠油/.test(x.it.n)))&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
     const c=e.target.closest("[data-s]");if(c){spec=c.dataset.s==="__all"?null:c.dataset.s;D.querySelectorAll("[data-s]").forEach(z=>z.classList.toggle("on",z===c));$("#shb").innerHTML=body();const photos=$("#cleanoutPhotos");if(photos)photos.innerHTML=cleanoutPhotos(spec);return}
     const b=e.target.closest("[data-a]");if(b){const r=b.closest(".vrow");const inp=r.querySelector("input");let n=(+inp.value||0)+(b.dataset.a==="+"?1:-1);if(n<0)n=0;inp.value=n||"";setQty(x,+r.dataset.vi,n);changed=true;r.classList.toggle("in",n>0);shn()}
   };
@@ -310,7 +311,7 @@ function pipeBrandDlg(x){
   const D=$("#dlg");
   const selected=x.it.v.map((v,vi)=>findLine(vKey(x.key,vi))).filter(Boolean);
   const same=selected.every(line=>line.brand===selected[0].brand)?selected[0].brand:"";
-  D.innerHTML=`<div class="sh-h"><h2>請選擇 PVC 管材廠牌</h2><small>${esc(x.it.n)}・套用到此品項已選的尺寸</small></div>
+  D.innerHTML=`<div class="sh-h"><h2>請選擇 ${x.g==="PVC另件"?"PVC 另件":"PVC 管材"}廠牌</h2><small>${esc(x.it.n)}・套用到此品項已選的尺寸</small></div>
     <div class="sh-b"><fieldset style="border:0;padding:0"><legend>廠牌</legend>${["南亞","大洋"].map(brand=>`<label style="display:inline-block;margin:12px"><input type="radio" name="pipeBrand" value="${brand}" ${same===brand?"checked":""}> ${brand}</label>`).join("")}</fieldset></div>
     <div class="sh-f"><button class="btn btn-p" data-brand-ok>確認廠牌</button></div>`;
   D.oninput=null;
