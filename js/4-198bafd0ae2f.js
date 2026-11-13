@@ -164,8 +164,20 @@ const vKey=(itemKey,vi)=>itemKey+"|"+vi;
 let siteChosen=false;
 function renderProj(){const s=$("#proj");s.innerHTML=(siteChosen?"":'<option value="" selected disabled>請選擇工地</option>')+S.projects.map(p=>`<option value="${p.id}" ${siteChosen&&p.id===S.cur?"selected":""}>${esc(p.name)}</option>`).join("");s.classList.toggle("need",!siteChosen)}
 $("#proj").onchange=e=>{if(!e.target.value)return;S.cur=e.target.value;siteChosen=true;persist();renderAll()};
-document.addEventListener("click",e=>{if(siteChosen)return;const t=e.target.closest("#vMenu .tile,.tab[data-v=order],.tab[data-v=hist],#cbGo");if(!t)return;e.preventDefault();e.stopPropagation();toast("請先選擇目前工地");const p=$("#proj");p.classList.remove("blink");void p.offsetWidth;p.classList.add("blink");p.focus()},true);
+document.addEventListener("click",e=>{if(siteChosen)return;const t=e.target.closest("#vMenu .tile,.tab[data-v=order],.tab[data-v=hist],#cbGo");if(!t)return;e.preventDefault();e.stopPropagation();toast("請先選擇目前工地");const p=$("#proj");p.classList.remove("blink");void p.offsetWidth;p.classList.add("blink");openSitePicker()},true);
 $("#appTools").addEventListener("click",e=>{if(e.target.closest("button"))$("#appTools").open=false});
+const SP=document.createElement("dialog");SP.id="sitePick";document.body.appendChild(SP);
+const CO_ORDER=["聖和工程有限公司","紘誠水電工程行","澧育有限公司","白鐵工程行"];
+const CO_COL={"聖和工程有限公司":"#2f6f3e","紘誠水電工程行":"#2c5d9b","澧育有限公司":"#9a5b12","白鐵工程行":"#57606a"};
+function openSitePicker(){const gs={};S.projects.forEach(p=>{const c=siteCo(p.name)||"";(gs[c]=gs[c]||[]).push(p)});
+  const keys=[...CO_ORDER.filter(k=>gs[k]),...Object.keys(gs).filter(k=>k&&!CO_ORDER.includes(k)),...(gs[""]?[""]:[])];
+  SP.innerHTML=`<div class="sp-h"><h2>📍 選擇目前工地</h2>${siteChosen?'<button class="sp-x" data-x>✕ 關閉</button>':""}</div><div class="sp-b">${keys.map(k=>{const col=CO_COL[k]||"#6b7280";return `<div class="sp-g"><div class="sp-gt" style="color:${col}"><i style="background:${col}"></i>${esc(k||"公司・倉庫")}</div><div class="sp-grid">${gs[k].map(p=>`<button class="sp-it${siteChosen&&p.id===S.cur?" on":""}" data-id="${p.id}" style="--c:${col}"><b>${esc(p.name)}</b><small>${esc(p.addr||"")}</small></button>`).join("")}</div></div>`}).join("")}</div>`;
+  SP.onclick=e=>{if(e.target.closest("[data-x]")){SP.close();return}const b=e.target.closest("[data-id]");if(!b)return;S.cur=b.dataset.id;siteChosen=true;persist();SP.close();renderAll();toast("目前工地："+P().name)};
+  SP.oncancel=e=>{if(!siteChosen)e.preventDefault()};
+  if(!SP.open)SP.showModal();SP.querySelector(".sp-b").scrollTop=0}
+document.querySelector(".project-context").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openSitePicker()},true);
+setTimeout(()=>{if(!siteChosen)openSitePicker()},400);
+
 
 // ---------- menu (tile style) ----------
 let curCat=-1,curG="",curB="",q="";
