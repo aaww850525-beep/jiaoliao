@@ -12,7 +12,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const COMPANIES=["聖和工程有限公司","紘誠水電工程行","澧育有限公司"];
 const DOCS=["保固書","測試報告","進口證明及銷售證明","中文操作說明","竣工圖","出廠證明","產地證明","其它"];
 function defSettings(){return{company:COMPANIES[0],title:"材料叫料單",vendor:"",vendorContact:"",vendorTel:"",vendorFax:"",contact:"",contactTel:"",discount:1}}
-function newOrder(p){const st=S.settings;const d=today();return{id:uid(),no:"",created:Date.now(),status:"draft",company:COMPANIES.includes(st.company)?st.company:COMPANIES[0],project:p.name,orderDate:d,dueDate:addDays(d,1),mode:"工地",addr:p.addr||"",contact:st.contact,contactTel:st.contactTel,docs:[],docOther:"",vendor:st.vendor,vendorContact:st.vendorContact,vendorTel:st.vendorTel,vendorFax:st.vendorFax,discount:st.discount,note:"",lines:[]}}
+function newOrder(p){const st=S.settings;const d=today();return{id:uid(),no:"",created:Date.now(),status:"draft",company:siteCo(p.name)||(COMPANIES.includes(st.company)?st.company:COMPANIES[0]),project:p.name,orderDate:d,dueDate:addDays(d,1),mode:"工地",addr:p.addr||"",contact:(sitePpl(p.name)[0]||[st.contact])[0],contactTel:(sitePpl(p.name)[0]||[0,st.contactTel])[1],docs:[],docOther:"",vendor:st.vendor,vendorContact:st.vendorContact,vendorTel:st.vendorTel,vendorFax:st.vendorFax,discount:st.discount,note:"",lines:[]}}
 let S=load();
 const PRESET_SITES=["南海段","內湖緯創","A21","微星科技","宜蘭山河飯店"];
 if(!S||!S.projects){S={settings:defSettings(),projects:[],cur:null}}
@@ -22,7 +22,10 @@ if(!S.presetSites1){
   const pos=n=>{const i=PRESET_SITES.indexOf(n);return i<0?99:i};S.projects.sort((x,y)=>pos(x.name)-pos(y.name));
   S.presetSites1=true;
 }
-const SITE_LIST=[["公司","新北市新莊區民安路398號"],["五股倉庫","新北市五股區民義路一段312號-16B"],["宜蘭山河","宜蘭縣五結鄉親河路一段228巷26號旁工地"],["新店大廣","新北市新店區三民路94巷6號對面"],["敦北飯店","台北市敦化北路242號"],["南港冠德","台北市南港區合成里忠孝東路六段39號"],["南海段","台北市中正區泉州街9號"],["國賓飯店","台北市中山區中山北路二段65巷9號"],["南山A21","台北市信義區松壽路6號（大門開在市府路上5號門-互助營造）"],["內湖緯創","台北市內湖區新湖一路191號"],["竹北緯創","竹北市智慧路1號"],["竹北聯發廠","竹北市十興路291號"],["湖口緯創","新竹縣湖口鄉光復北路50號"],["高雄緯創","高雄市前鎮區東七街2號（高雄前鎮科技產業園區）"],["龜山微星","龜山區中興路2號"],["青埔B基地","中壢區領航北路三段青昇路交叉口"],["觀音聯華","桃園市觀音區工業一路16之1號"]];
+const SITE_LIST=[["公司", "新北市新莊區民安路398號"], ["五股倉庫", "新北市五股區民義路一段312號-16B"], ["宜蘭山河", "宜蘭縣五結鄉親河路一段228巷26號旁工地"], ["新店大廣", "新北市新店區三民路94巷6號對面"], ["敦北飯店", "台北市敦化北路242號"], ["南山A21", "台北市信義區松壽路6號（大門開在市府路上5號門-互助營造）"], ["國賓飯店", "台北市中山區中山北路二段65巷9號"], ["南港冠德", "台北市南港區合成里忠孝東路六段39號"], ["南海段", "台北市中正區泉州街9巷12號旁工地"], ["內湖緯創", "台北市內湖區新湖一路191號"], ["竹北緯創", "竹北市智慧路1號"], ["竹北聯發廠", "竹北市十興路291號"], ["湖口緯創", "新竹縣湖口鄉光復北路50號"], ["湖口緯創 N1F", "新竹縣湖口鄉光復北路50號"], ["湖口緯創 N1J7冰機", "新竹縣湖口鄉光復北路50號"], ["高雄緯創", "高雄市前鎮區東七街2號（高雄前鎮科技產業園區）"], ["龜山微星", "龜山區中興路2號"], ["觀音聯華", "桃園市觀音區工業一路16之1號"], ["三重捷六", "三重區捷運路59號對面工地"], ["五谷王(峰左岸)", "新北市三重區(疏洪西路與興德路口)"], ["青埔B基地", "中壢區領航北路三段青昇路交叉口"]];
+const SITE_INFO={"公司": {"co": "", "ppl": []}, "五股倉庫": {"co": "", "ppl": [["陳清榮", "0383-969-599"]]}, "宜蘭山河": {"co": "澧育有限公司", "ppl": [["林顯呈", "0937-162-938"], ["陳豐乙", "0961-151-005"], ["曾建智", "0930-891-963"], ["王耀德", "0979-890-000"]]}, "新店大廣": {"co": "紘誠水電工程行", "ppl": [["楊志華", "0960-119-729"]]}, "敦北飯店": {"co": "紘誠水電工程行", "ppl": [["高清華", "0933-066-337"]]}, "南山A21": {"co": "紘誠水電工程行", "ppl": [["林志雄", "0981-575-553"]]}, "國賓飯店": {"co": "紘誠水電工程行", "ppl": [["李弘溢", "0926-283-762"]]}, "南港冠德": {"co": "紘誠水電工程行", "ppl": [["陳致豪", "0983-822-193"]]}, "南海段": {"co": "聖和工程有限公司", "ppl": [["溫祥淵", "0987-419-519"]]}, "內湖緯創": {"co": "聖和工程有限公司", "ppl": [["周佳珍", "0986-811-500"]]}, "竹北緯創": {"co": "聖和工程有限公司", "ppl": [["游伸鋒", "0955-895-658"]]}, "竹北聯發廠": {"co": "聖和工程有限公司", "ppl": [["毛亮友", "0903-579-317"]]}, "湖口緯創": {"co": "聖和工程有限公司", "ppl": [["蔡永元", "0925-763-735"]]}, "湖口緯創 N1F": {"co": "紘誠水電工程行", "ppl": []}, "湖口緯創 N1J7冰機": {"co": "澧育有限公司", "ppl": []}, "高雄緯創": {"co": "聖和工程有限公司", "ppl": [["游伸鋒", "0955-895-658"], ["蔡永元", "0925-763-735"], ["覃輝豐", "0936-757-907"]]}, "龜山微星": {"co": "聖和工程有限公司", "ppl": [["李重陽", "0978-723-297"], ["陳柏竹", "0970-522-793"]]}, "觀音聯華": {"co": "", "ppl": [["蔡永元", "0925-763-735"]]}, "三重捷六": {"co": "聖和工程有限公司", "ppl": []}, "五谷王(峰左岸)": {"co": "聖和工程有限公司", "ppl": [["老闆", "0913-515-179"]]}, "青埔B基地": {"co": "紘誠水電工程行", "ppl": [["覃輝豐", "0936-757-907"]]}};
+function siteCo(n){const x=SITE_INFO[n];return x&&x.co||""}
+function sitePpl(n){const x=SITE_INFO[n];return x?x.ppl:[]}
 const SITE_ADDR=Object.fromEntries(SITE_LIST);
 if(!S.presetSites2){
   const RENAME={"A21":"南山A21","微星科技":"龜山微星","宜蘭山河飯店":"宜蘭山河"};
@@ -37,6 +40,14 @@ if(!S.presetSites3){
   SITE_LIST.forEach(([n,a])=>{if(!S.projects.find(x=>x.name===n))S.projects.push({id:uid(),name:n,addr:a,orders:[],draft:null})});
   const pos=n=>SITE_LIST.findIndex(x=>x[0]===n);S.projects.sort((x,y)=>pos(x.name)-pos(y.name));
   S.presetSites3=true;
+}
+if(!S.presetSites4){
+  const OLDA={"南海段": "台北市中正區泉州街9號"};
+  SITE_LIST.forEach(([n,a])=>{let p=S.projects.find(x=>x.name===n);if(!p){p={id:uid(),name:n,addr:a,orders:[],draft:null};S.projects.push(p)}
+    if(!p.addr||p.addr===OLDA[n])p.addr=a;
+    const d=p.draft;if(d){if(!d.addr||d.addr===OLDA[n])d.addr=a;const co=siteCo(n);if(co)d.company=co;const pp=sitePpl(n);if(pp.length&&!d.contact){d.contact=pp[0][0];d.contactTel=pp[0][1]}}});
+  const pos=n=>{const i=SITE_LIST.findIndex(x=>x[0]===n);return i<0?999:i};S.projects.sort((x,y)=>pos(x.name)-pos(y.name));
+  S.presetSites4=true;
 }
 if(!S.projects.length)S.projects.push({id:uid(),name:"新工地",addr:"",orders:[],draft:null});
 S.settings=Object.assign(defSettings(),S.settings||{});
@@ -397,7 +408,7 @@ function renderOrder(){
     <div class="f full"><label class="f" style="margin:0">交貨方式</label><div class="opts">${["工務所","工地","自取"].map(m=>`<label><input type="radio" name="mode" value="${m}" ${d.mode===m?"checked":""}> ${m}</label>`).join("")}</div></div>
     <label class="f full">交貨地點（地址）<input data-f="addr" value="${esc(d.addr)}" placeholder="例如：新竹縣湖口鄉…"></label>
     <label class="f">收貨人<input data-f="contact" value="${esc(d.contact)}"></label>
-    <label class="f">收貨人電話<input data-f="contactTel" value="${esc(d.contactTel)}" inputmode="tel"></label>
+    <label class="f">收貨人電話<input data-f="contactTel" value="${esc(d.contactTel)}" inputmode="tel"></label>${sitePpl(d.project).length>1?`<div class="f full ppl"><span>點名字快速帶入收貨人：</span><div>${sitePpl(d.project).map((x,i)=>`<button type="button" class="btn${x[0]===d.contact?" on":""}" data-ppl="${i}">${esc(x[0])}<small>${esc(x[1])}</small></button>`).join("")}</div></div>`:""}
     <div class="f full"><label class="f" style="margin:0">附查驗用證明文件</label><div class="opts">${DOCS.map(x=>`<label><input type="checkbox" data-doc="${x}" ${d.docs.includes(x)?"checked":""}> ${x}</label>`).join("")}<input data-f="docOther" value="${esc(d.docOther)}" placeholder="其它說明" style="border:1px solid #d1d5db;border-radius:8px;padding:4px 8px;min-width:120px"></div></div>
    </div></div>
   <details class="card vend" ${window.__vendOpen?"open":""} ontoggle="window.__vendOpen=this.open"><summary class="sec">🏭 廠商<span class="vsum">${esc(d.vendor||"")}</span><span class="vchev">點我展開 ▾</span></summary><div class="grid">
@@ -414,7 +425,7 @@ function renderOrder(){
   <div class="acts"><button class="btn btn-g" id="bSave">💾 儲存到紀錄</button><button class="btn btn-p" id="bXls" ${d.lines.length?"":"disabled"}>⬇ 匯出 Excel</button><button class="btn btn-p" id="bPdf" ${d.lines.length?"":"disabled"}>📄 預覽 PDF</button></div><div class="acts acts-clear"><button class="btn" id="bNew">📄 另開新單</button><button class="btn btn-d" id="bClear">🗑 清空</button></div>
   <p class="note" style="text-align:right">匯出 Excel 只會產生這一張叫料單（當月總表請到「紀錄」匯出）；「預覽 PDF」可先看列印樣式再下載。</p>`;
   v.oninput=e=>{const t=e.target;
-    if(t.dataset.f){const was=d[t.dataset.f];d[t.dataset.f]=t.type==="number"?(t.value===""?"":+t.value):t.value;if(t.dataset.f==="project"&&t.value!==was){const np=S.projects.find(x=>x.name===t.value),op=S.projects.find(x=>x.name===was);const na=(np&&np.addr)||SITE_ADDR[t.value]||"";if(na&&(!d.addr||d.addr===((op&&op.addr)||SITE_ADDR[was]))){d.addr=na;const ai=v.querySelector("[data-f=addr]");if(ai)ai.value=na}}persist();return}
+    if(t.dataset.f){const was=d[t.dataset.f];d[t.dataset.f]=t.type==="number"?(t.value===""?"":+t.value):t.value;if(t.dataset.f==="project"&&t.value!==was){const np=S.projects.find(x=>x.name===t.value),op=S.projects.find(x=>x.name===was);const na=(np&&np.addr)||SITE_ADDR[t.value]||"";if(na&&(!d.addr||d.addr===((op&&op.addr)||SITE_ADDR[was]))){d.addr=na;const ai=v.querySelector("[data-f=addr]");if(ai)ai.value=na}const nc=siteCo(t.value);if(nc)d.company=nc;const pp=sitePpl(t.value);if(pp.length){d.contact=pp[0][0];d.contactTel=pp[0][1]}else{const op2=sitePpl(was);if(op2.some(x=>x[0]===d.contact)){d.contact="";d.contactTel=""}}persist();renderOrder();return}persist();return}
     if(t.dataset.doc){d.docs=DOCS.filter(x=>v.querySelector(`[data-doc="${x}"]`).checked);persist();return}
     if(t.name==="mode"){d.mode=t.value;persist();return}
     const row=t.closest(".line");if(!row)return;const l=d.lines.find(z=>z.id===row.dataset.id);
@@ -425,7 +436,7 @@ function renderOrder(){
     
   };
   v.onchange=e=>{const t=e.target;if(t.tagName==="SELECT"&&t.dataset.f){d[t.dataset.f]=t.value;persist()}};
-  v.onclick=e=>{const t=e.target;const row=t.closest(".line");
+  v.onclick=e=>{const t=e.target;const pb=t.closest("[data-ppl]");if(pb){const x=sitePpl(d.project)[+pb.dataset.ppl];if(x){d.contact=x[0];d.contactTel=x[1];persist();renderOrder()}return}const row=t.closest(".line");
     if(row){const l=d.lines.find(z=>z.id===row.dataset.id);
       if(t.classList.contains("del")){d.lines=d.lines.filter(z=>z!==l);persist();renderOrder();updateCart();return}
       if(t.dataset.a){l.qty=Math.max(0,(+l.qty||0)+(t.dataset.a==="+"?1:-1));if(l.qty===0){d.lines=d.lines.filter(z=>z!==l)}persist();renderOrder();updateCart();return}}
