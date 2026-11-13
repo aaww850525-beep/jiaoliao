@@ -168,7 +168,7 @@ let siteChosen=false;
 function renderProj(){const s=$("#proj");s.innerHTML=(siteChosen?"":'<option value="" selected disabled>請選擇工地</option>')+S.projects.map(p=>`<option value="${p.id}" ${siteChosen&&p.id===S.cur?"selected":""}>${esc(p.name)}</option>`).join("");s.classList.toggle("need",!siteChosen)}
 $("#proj").onchange=e=>{if(!e.target.value)return;S.cur=e.target.value;siteChosen=true;persist();renderAll()};
 document.addEventListener("click",e=>{if(siteChosen)return;const t=e.target.closest("#vMenu .tile,.tab[data-v=order],.tab[data-v=hist],#cbGo");if(!t)return;e.preventDefault();e.stopPropagation();toast("請先選擇目前工地");const p=$("#proj");p.classList.remove("blink");void p.offsetWidth;p.classList.add("blink");const pc=document.querySelector(".project-context");pc.classList.remove("blink");void pc.offsetWidth;pc.classList.add("blink")},true);
-$("#appTools").addEventListener("click",e=>{if(e.target.closest("button"))$("#appTools").open=false});
+$("#appTools").addEventListener("click",e=>{if(e.target.closest("button"))$("#appTools").open=false});addEventListener("popstate",()=>{const b=document.querySelector("#crumb [data-nav=back]");if(b&&!b.hidden&&!$("#vMenu").hidden&&!document.querySelector("dialog[open]")){window.__popping=true;b.click();window.__popping=false}});
 const SP=document.createElement("dialog");SP.id="sitePick";document.body.appendChild(SP);
 const CO_ORDER=["聖和工程有限公司","紘誠水電工程行","澧育有限公司","白鐵工程行"];
 const CO_COL={"聖和工程有限公司":"#2f6f3e","紘誠水電工程行":"#2c5d9b","澧育有限公司":"#9a5b12","白鐵工程行":"#57606a"};
@@ -226,6 +226,7 @@ function tile(attrs,color,icon,label,sub,badge,small,img){
   return `<button class="tile${small?" sm":""}" ${attrs} style="--tc:${color}">${badge?`<span class="tbadge">${badge}</span>`:""}${img?`<span class="timg"><img src="${img}" alt=""></span>`:`<span class="ti">${icon}</span>`}<span class="tl">${esc(label)}</span>${sub?`<span class="ts">${esc(sub)}</span>`:""}</button>`;
 }
 function renderList(){
+  {const _dep=(curG?1:0)+(curB?1:0)+(curCat>=0?1:0);if(_dep>(window.__dep||0)&&!window.__popping)try{history.pushState({jl:_dep},"")}catch(e){};window.__dep=_dep;}
   const L=$("#list"),C=$("#crumb");
   const terms=q.trim().toLowerCase().split(/\s+/).filter(Boolean);
   // breadcrumb
@@ -235,7 +236,7 @@ function renderList(){
   if(curCat>=0&&menuCatalog.filter(c=>(c.g||"其他")===curG).length>1)parts.push(`<span>›</span><b>${esc(short(menuCatalog[curCat].n))}</b>`);
   const level=terms.length?"items":(!curG?"groups":(curCat<0?"cats":"items"));
   const title=terms.length?"搜尋結果":level==="groups"?"材料品項":level==="cats"?(curB&&menuCatalog.some(c=>c.g===curG&&c.b)?"材質":"材料細項"):"材料";
-  C.innerHTML=`${curG||terms.length?`<button class="cb back" data-nav="back" ${terms.length?"hidden":""}>‹ 返回</button>`:""}<div class="cpath">${parts.join("")}</div>${level==="groups"?"":`<span class="ctitle">${title}</span>`}`;
+  C.innerHTML=`${curG||terms.length?`<button class="cb back" data-nav="back" ${terms.length?"hidden":""}><span class="bk-ar">←</span> 回上一層<small>${esc(curCat>=0?(curB||curG):curB?curG:"材料分類")}</small></button>`:""}<div class="cpath">${parts.join("")}</div>${level==="groups"?"":`<span class="ctitle">${title}</span>`}`;
   if(level==="groups"){
     L.innerHTML=GROUPS.map(g=>{const n=catCount(ci=>(menuCatalog[ci].g||"其他")===g);return tile(`data-g="${esc(g)}"`,gColor(g),gIcon(g),g,"",n,false,imgOf(IMG.GROUP[g]))}).join("")+
       tile(`data-custom`,"#3d5240","✍️","自訂品項","型錄以外","",false);
