@@ -101,6 +101,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   const out=[];
   const weldGs=["鍍鋅・不銹鋼焊接另件","黑鐵焊接另件","電白焊接另件","熱浸焊接另件"];
   menuCatalog.forEach(c=>{
+    if(c.n==="PVC另件・橘色薄（下水道）")c={...c,items:c.items.filter(x=>!/^(90° L型異徑接頭|排氣T型排水接頭|Y型接頭單插口)$/.test(x.it.n))};
     if(c.g==="鐵管・不銹鋼管"){
       const pick=(re)=>c.items.filter(x=>re.test(x.it.n));
       if(c.n==="鍍鋅鋼管・白鐵管・被覆管"){
