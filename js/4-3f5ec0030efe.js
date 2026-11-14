@@ -104,6 +104,9 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   menuCatalog.forEach(c=>{
     if(c.items.some(x=>x.it.nw&&x.it.n==="排水管蓋（淺管帽）")){const ORD=["排水管蓋（淺管帽）","伸縮套管 10cm","伸縮套管 12cm","伸縮套管 15cm","卡式套管","饅頭（平頂塞口）"];c={...c,items:c.items.filter(x=>!/^(冷氣孔修飾|浪管圓片|伸縮套管)$/.test(x.it.n)&&!(x.it.n==="排水管蓋（淺管帽）"&&!x.it.nw)).sort((a,b)=>ORD.indexOf(a.it.n)-ORD.indexOf(b.it.n))};}
     if(c.n==="懸吊系列"){const NEWN=["鍍鋅雙層管束","不鏽鋼雙層管束","鍍鋅葫蘆束","不鏽鋼葫蘆束"];const nw=c.items.filter(x=>NEWN.includes(x.it.n)).sort((a,b)=>NEWN.indexOf(a.it.n)-NEWN.indexOf(b.it.n));const OLDN=/^(雙層管束|葫蘆管束 (3\/8|1\/2)"孔|不銹鋼葫蘆束 (3\/8|1\/2)"孔)$/;const at=c.items.findIndex(x=>OLDN.test(x.it.n));const rest=c.items.filter(x=>!OLDN.test(x.it.n)&&!NEWN.includes(x.it.n));c={...c,items:at<0?rest.concat(nw):[...rest.slice(0,at),...nw,...rest.slice(at)]};}
+    if(c.n==="不銹鋼雙壓接另件・滑動式保溫另件"){out.push({...c,g:"壓接另件",n:"北銘 雙壓接接頭",items:c.items.filter(x=>x.it.bm)});return;}
+    if(c.n==="邁克溝槽式機械接頭・另件（UL/FM）"){out.push({...c,n:"秀而久 溝槽式接頭・另件",items:c.items.filter(x=>x.it.sj)});return;}
+    if(c.n==="金通溝槽機械接頭・可彎接頭")return;
     if(c.n==="PU管墊・PE保溫管"){out.push({...c,n:"PU管墊",items:c.items.filter(x=>/^PU/.test(x.it.n))});out.push({...c,n:"PE保溫管・膠帶",items:c.items.filter(x=>!/^PU/.test(x.it.n))});return;}
     if(c.n==="PVC另件・橘色薄（下水道）")c={...c,items:c.items.filter(x=>!/^(90° L型異徑接頭|排氣T型排水接頭|Y型接頭單插口)$/.test(x.it.n))};
     if(c.g==="鐵管・不銹鋼管"){
@@ -163,6 +166,7 @@ function materialName(line){
     const match=/^碳鋼焊另件 (.+) (黑鐵|電白|熱浸)$/.exec(line.name);
     if(match)return match[2]+"碳鋼焊接另件 "+match[1];
   }
+  if(/^(秀而久|北銘) /.test(line.name||""))return line.name;
   if(grooveCategories.has(line.cat))return grooveGroup+"｜"+line.cat+" "+line.name;
   if(line.cat&&/有縫焊/.test(line.cat))return line.cat+" "+line.name;
   return line.name;
@@ -800,10 +804,10 @@ async function exportMonth(month){
 // ---------- PDF (preview + download) ----------
 function fmtDate(s){if(!s)return "";const [y,m,dd]=s.split("-").map(Number);return `${y-1911}年${m}月${dd}日`}
 const FIRST_ROWS=32,NEXT_ROWS=46;
-const LN_PRE={"150磅可鍛鑄鐵零件(熱浸)":"150磅熱浸","300磅可鍛鑄鐵零件(熱浸)":"300磅熱浸","304不銹鋼牙件 150P":"304不銹鋼牙件","展性可鍛鑄鐵牙另件 150psi UL/FM（MECH）":"UL/FM","球狀石墨鑄鐵 300psi 螺紋另件 UL/FM（MECH）":"球墨鑄鐵 UL/FM","不銹鋼雙壓接另件・滑動式保溫另件":"不銹鋼壓接","ONK Nice Joint 不鏽鋼管式接頭 SUS304":"Nice Joint","鍛鋼／碳鋼／不鏽鋼法蘭（萬蕙昇）":"萬蕙昇法蘭","迫緊墊片":"墊片","不銹鋼軟管製品、合成橡膠防震接頭":"不銹鋼軟管"};
-function lineName(l){let n=lineName0(l);n=n.replace(/^滾溝另件｜(\S+) /,(m,c)=>/金通/.test(c)?"金通溝槽 ":/邁克/.test(c)?"溝槽 ":"");
+const LN_PRE={"150磅可鍛鑄鐵零件(熱浸)":"150磅熱浸","300磅可鍛鑄鐵零件(熱浸)":"300磅熱浸","304不銹鋼牙件 150P":"304不銹鋼牙件","展性可鍛鑄鐵牙另件 150psi UL/FM（MECH）":"UL/FM","球狀石墨鑄鐵 300psi 螺紋另件 UL/FM（MECH）":"球墨鑄鐵 UL/FM","ONK Nice Joint 不鏽鋼管式接頭 SUS304":"Nice Joint","鍛鋼／碳鋼／不鏽鋼法蘭（萬蕙昇）":"萬蕙昇法蘭","迫緊墊片":"墊片","不銹鋼軟管製品、合成橡膠防震接頭":"不銹鋼軟管"};
+function lineName(l){let n=lineName0(l);n=n.replace(/^滾溝另件｜(\S+) /,(m,c)=>/^秀而久/.test(l.name||"")?"":/金通/.test(c)?"金通溝槽 ":/邁克/.test(c)?"溝槽 ":"");
   let pre=LN_PRE[l.cat]||"";const fs=/^富山閥・(.+)$/.exec(l.cat||"");if(fs)pre="富山 "+fs[1];
-  if(pre&&!n.startsWith(pre))n=pre+" "+n;return n}
+  if(!pre&&l.cat==="不銹鋼雙壓接另件・滑動式保溫另件"&&!/^北銘/.test(n))pre="不銹鋼壓接";if(pre&&!n.startsWith(pre))n=pre+" "+n;return n}
 function lineName0(l){const name=materialName(l);if(name!==l.name)return [name,l.size,l.spec].filter(Boolean).join(" ");return [false&&l.cat?l.cat.replace(/^PVC另件・/,"PVC ").replace(/另件$/,""):"",l.name,l.size,l.spec].filter(Boolean).join(" ")}
 function buildPages(d){
   const st=S.settings;const company=d.company||st.company||"";const title=(st.title&&st.title!=="材料叫料單"?st.title:"材料出貨單");
