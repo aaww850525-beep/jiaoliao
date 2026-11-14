@@ -105,6 +105,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   menuCatalog.forEach(c=>{
     if(c.items.some(x=>x.it.nw&&x.it.n==="排水管蓋（淺管帽）")){const ORD=["排水管蓋（淺管帽）","伸縮套管 10cm","伸縮套管 12cm","伸縮套管 15cm","卡式套管","饅頭（平頂塞口）"];c={...c,items:c.items.filter(x=>!/^(冷氣孔修飾|浪管圓片|伸縮套管)$/.test(x.it.n)&&!(x.it.n==="排水管蓋（淺管帽）"&&!x.it.nw)).sort((a,b)=>ORD.indexOf(a.it.n)-ORD.indexOf(b.it.n))};}
     if(c.n==="懸吊系列"){const NEWN=["鍍鋅雙層管束","不鏽鋼雙層管束","鍍鋅葫蘆束 3/8\"孔","鍍鋅葫蘆束 1/2\"孔","不鏽鋼葫蘆束 3/8\"孔"];const nw=c.items.filter(x=>NEWN.includes(x.it.n)).sort((a,b)=>NEWN.indexOf(a.it.n)-NEWN.indexOf(b.it.n));const OLDN=/^(雙層管束|葫蘆管束 (3\/8|1\/2)"孔|不銹鋼葫蘆束 (3\/8|1\/2)"孔|鍍鋅葫蘆束|不鏽鋼葫蘆束)$/;const at=c.items.findIndex(x=>OLDN.test(x.it.n));const rest=c.items.filter(x=>!OLDN.test(x.it.n)&&!NEWN.includes(x.it.n));c={...c,items:at<0?rest.concat(nw):[...rest.slice(0,at),...nw,...rest.slice(at)]};}
+    if(c.n==="PVC另件・其他（價目表）")return;
     if(c.g==="PVC另件"||/^PVC另件/.test(c.n))c={...c,items:c.items.filter(x=>!/^(HI耐衝擊 )?90° ?L型異徑接頭$/.test(x.it.n))};
     if(c.n==="不銹鋼雙壓接另件・滑動式保溫另件"){out.push({...c,g:"壓接另件",n:"北銘 雙壓接接頭",items:c.items.filter(x=>x.it.bm)});return;}
     if(c.n==="邁克溝槽式機械接頭・另件（UL/FM）"){out.push({...c,n:"秀而久 溝槽式接頭・另件",items:c.items.filter(x=>x.it.sj)});return;}
