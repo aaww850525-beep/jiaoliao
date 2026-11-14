@@ -106,6 +106,9 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
     if(c.items.some(x=>x.it.nw&&x.it.n==="排水管蓋（淺管帽）")){const ORD=["排水管蓋（淺管帽）","伸縮套管 10cm","伸縮套管 12cm","伸縮套管 15cm","卡式套管","饅頭（平頂塞口）"];c={...c,items:c.items.filter(x=>!/^(冷氣孔修飾|浪管圓片|伸縮套管)$/.test(x.it.n)&&!(x.it.n==="排水管蓋（淺管帽）"&&!x.it.nw)).sort((a,b)=>ORD.indexOf(a.it.n)-ORD.indexOf(b.it.n))};}
     if(c.n==="懸吊系列"){const NEWN=["鍍鋅雙層管束","不鏽鋼雙層管束","鍍鋅葫蘆束 3/8\"孔","鍍鋅葫蘆束 1/2\"孔","不鏽鋼葫蘆束 3/8\"孔"];const nw=c.items.filter(x=>NEWN.includes(x.it.n)).sort((a,b)=>NEWN.indexOf(a.it.n)-NEWN.indexOf(b.it.n));const OLDN=/^(雙層管束|葫蘆管束 (3\/8|1\/2)"孔|不銹鋼葫蘆束 (3\/8|1\/2)"孔|鍍鋅葫蘆束|不鏽鋼葫蘆束)$/;const at=c.items.findIndex(x=>OLDN.test(x.it.n));const rest=c.items.filter(x=>!OLDN.test(x.it.n)&&!NEWN.includes(x.it.n));c={...c,items:at<0?rest.concat(nw):[...rest.slice(0,at),...nw,...rest.slice(at)]};}
     if(c.n==="PVC另件・其他（價目表）")return;
+    {const DEL={"PVC另件・灰色厚": ["龍S接頭(豪宅型・威猛)", "龍L彎頭(豪宅型・威猛)"], "PVC另件・灰色・配件": ["清除孔接頭", "止水板接頭", "雙層止水板接頭", "組合式穿樑接頭"], "PVC另件・橘色厚（下水道）": ["清除孔接頭"], "PVC另件・清潔口": ["暗式清潔口"], "塑膠另件・平頂・喇叭口": ["平頂塞口（饅頭）", "平頂接頭－水用"]};if(DEL[c.n])c={...c,items:c.items.filter(x=>!DEL[c.n].includes(x.it.n))};if(!c.items.length)return;}
+    if(c.n==="PVC套龍口")return;
+
     if(c.g==="PVC另件"||/^PVC另件/.test(c.n))c={...c,items:c.items.filter(x=>!/^(HI耐衝擊 )?90° ?L型異徑接頭$/.test(x.it.n))};
     if(c.n==="不銹鋼雙壓接另件・滑動式保溫另件"){out.push({...c,g:"壓接另件",n:"北銘 雙壓接接頭",items:c.items.filter(x=>x.it.bm)});return;}
     if(c.n==="邁克溝槽式機械接頭・另件（UL/FM）"){out.push({...c,n:"秀而久 溝槽式接頭・另件",items:c.items.filter(x=>x.it.sj)});return;}
@@ -157,6 +160,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   });
   const mv=(g,after)=>{const i=order.indexOf(g);if(i<0||!order.includes(after))return;order.splice(i,1);order.splice(order.indexOf(after)+1,0,g)};mv("ACI","軟管・防震接頭");mv("五金另料","法蘭・墊片");
   out.sort((a,b)=>order.indexOf(a.g||"其他")-order.indexOf(b.g||"其他"));
+  {const A=out.find(c=>c.n==="PVC另件・灰色・配件"),G=out.find(c=>c.n==="PVC另件・灰色厚");if(A&&G){const m=A.items.filter(x=>x.it.n==="樓板接頭");A.items=A.items.filter(x=>x.it.n!=="樓板接頭");G.items=[...G.items,...m];}}
   menuCatalog.length=0;menuCatalog.push(...out);
 })();
 function materialName(line){
@@ -212,7 +216,7 @@ const gColor=g=>(GSTYLE[g]||[PAL[GROUPS.indexOf(g)%PAL.length]])[0];
 const gIcon=g=>(GSTYLE[g]||[,"📦"])[1];
 function itemIcon(n,g){return /閥/.test(n)?"🚰":/過濾/.test(n)?"🧽":/法蘭/.test(n)?"⭕":/墊片|由任皮/.test(n)?"🩹":/螺絲|螺帽|華司|壁虎|牙條/.test(n)?"🔩":/立布/.test(n)?"🧱":/BOX|盒/.test(n)?"📦":
   /彎|L型|L /.test(n)?"↪️":/三通|T型|順T|Y型|十字|四通|斜T/.test(n)?"🔀":/塞|帽|蓋/.test(n)?"⛔":/膠|帶/.test(n)?"🎞️":/管束|管夾|吊|鋼|角鐵|槽鐵/.test(n)?"🪝":/接頭|接|套|由令|由另|卜申|補心/.test(n)?"🔗":/管/.test(n)?"🟦":gIcon(g)}
-const short=n=>n.replace(/^(東光閥|富山閥|日泰閥|ACHEN閥)・/,"").replace(/^PVC另件・/,"").replace(/^富山閥・/,"").replace(/^塑膠另件・/,"");
+const short=n=>({"PVC另件・灰色厚":"灰色-厚","PVC另件・灰色薄・排水用":"灰色-薄"})[n]||n.replace(/^(東光閥|富山閥|日泰閥|ACHEN閥)・/,"").replace(/^PVC另件・/,"").replace(/^富山閥・/,"").replace(/^塑膠另件・/,"");
 function renderMenu(){
   const v=$("#vMenu");
   v.innerHTML=`<div class="menu-title"><small>工程叫料小幫手</small><h1>點料</h1><p>依材料分類快速找到需要的品項</p></div><div class="search"><span>🔍</span><input id="q" type="search" placeholder="搜尋，例如：B管 2&quot;、45°L、球塞閥 FS-312、立布" value="${esc(q)}"></div>
