@@ -108,6 +108,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
     if(c.n==="不銹鋼雙壓接另件・滑動式保溫另件"){out.push({...c,g:"壓接另件",n:"北銘 單壓接接頭",items:c.items.filter(x=>x.it.bs).sort((p,q)=>(/全通|由令|水壓試驗/.test(p.it.n)?1:0)-(/全通|由令|水壓試驗/.test(q.it.n)?1:0))});out.push({...c,g:"壓接另件",n:"北銘 雙壓接接頭",items:c.items.filter(x=>x.it.bm)});return;}
     if(c.n==="邁克溝槽式機械接頭・另件（UL/FM）"){out.push({...c,n:"秀而久 溝槽式接頭・另件",items:c.items.filter(x=>x.it.sj)});return;}
     if(c.n==="金通溝槽機械接頭・可彎接頭")return;
+    if(c.n==="ONK Nice Joint 不鏽鋼管式接頭 SUS304")return;
     if(c.n==="PU管墊・PE保溫管"){out.push({...c,n:"PU管墊",items:c.items.filter(x=>/^PU/.test(x.it.n))});out.push({...c,n:"PE保溫管・膠帶",items:c.items.filter(x=>!/^PU/.test(x.it.n))});return;}
     if(c.n==="PVC另件・橘色薄（下水道）")c={...c,items:c.items.filter(x=>!/^(90° L型異徑接頭|排氣T型排水接頭|Y型接頭單插口)$/.test(x.it.n))};
     if(c.g==="鐵管・不銹鋼管"){
