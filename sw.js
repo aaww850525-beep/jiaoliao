@@ -10,6 +10,7 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const req = event.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
+  if (!new URL(req.url).pathname.startsWith(new URL("./", self.registration.scope).pathname) || (self.registration.scope.indexOf("/xinban/")<0 && new URL(req.url).pathname.indexOf("/xinban/")>=0)) return;
   if (req.mode === "navigate") {
     // 頁面：先試網路拿新版，沒網路就用存好的
     event.respondWith(fetch(req, {cache: "no-store"}).then(res => {
