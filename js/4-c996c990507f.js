@@ -78,7 +78,7 @@ const PVC_NEW_START=90;const PVC_OLD=new Set([2, 3, 4, 5, 6]);
 const PVC_LAB=Object.fromEntries(CATALOG.slice(PVC_NEW_START).filter(c=>c.lab).map(c=>[c.n,c.lab]));
 const HI_PIPE_CI=CATALOG.findIndex(c=>c.hiPipe);
 const menuCatalog=CATALOG.flatMap((c,ci)=>{
-  if(ci>=PVC_NEW_START)return [];
+  if(ci>=PVC_NEW_START&&!c.gg19)return [];
   if(ci===0&&HI_PIPE_CI>0)return [{...c,n:"PVC灰色管",items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})).filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n}];
   if(ci===1&&HI_PIPE_CI>0){const c0=CATALOG[0];const all=c0.items.map((it,ii)=>({it,key:"0_"+ii}));const hc=CATALOG[HI_PIPE_CI];
     return [{...c,items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})),source:c.n},
@@ -106,6 +106,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
     if(c.items.some(x=>x.it.nw&&x.it.n==="排水管蓋（淺管帽）")){const ORD=["排水管蓋（淺管帽）","伸縮套管 10cm","伸縮套管 12cm","伸縮套管 15cm","卡式套管","饅頭（平頂塞口）"];c={...c,items:c.items.filter(x=>!/^(冷氣孔修飾|浪管圓片|伸縮套管)$/.test(x.it.n)&&!(x.it.n==="排水管蓋（淺管帽）"&&!x.it.nw)).sort((a,b)=>ORD.indexOf(a.it.n)-ORD.indexOf(b.it.n))};}
     if(c.n==="懸吊系列"){const NEWN=["鍍鋅雙層管束","不鏽鋼雙層管束","鍍鋅葫蘆束 3/8\"孔","鍍鋅葫蘆束 1/2\"孔","不鏽鋼葫蘆束 3/8\"孔"];const nw=c.items.filter(x=>NEWN.includes(x.it.n)).sort((a,b)=>NEWN.indexOf(a.it.n)-NEWN.indexOf(b.it.n));const OLDN=/^(雙層管束|葫蘆管束 (3\/8|1\/2)"孔|不銹鋼葫蘆束 (3\/8|1\/2)"孔|鍍鋅葫蘆束|不鏽鋼葫蘆束)$/;const at=c.items.findIndex(x=>OLDN.test(x.it.n));const rest=c.items.filter(x=>!OLDN.test(x.it.n)&&!NEWN.includes(x.it.n));c={...c,items:at<0?rest.concat(nw):[...rest.slice(0,at),...nw,...rest.slice(at)]};}
     if(c.n==="PVC另件・其他（價目表）")return;
+    if(c.n==="電白(鍍鋅)法蘭"||c.n==="304不銹鋼法蘭"||c.n==="迫緊墊片")return;
     {const DEL={"PVC另件・灰色厚": ["龍S接頭(豪宅型・威猛)", "龍L彎頭(豪宅型・威猛)"], "PVC另件・灰色・配件": ["清除孔接頭", "止水板接頭", "雙層止水板接頭", "組合式穿樑接頭"], "PVC另件・橘色厚（下水道）": ["清除孔接頭"], "PVC另件・清潔口": ["暗式清潔口"], "塑膠另件・平頂・喇叭口": ["平頂塞口（饅頭）", "平頂接頭－水用"], "塑膠另件・PVC凡而・由令": ["PVC由令（套管）"]};if(DEL[c.n])c={...c,items:c.items.filter(x=>!DEL[c.n].includes(x.it.n))};if(!c.items.length)return;}
     if(c.n==="PVC套龍口")return;
 
@@ -161,6 +162,7 @@ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   const mv=(g,after)=>{const i=order.indexOf(g);if(i<0||!order.includes(after))return;order.splice(i,1);order.splice(order.indexOf(after)+1,0,g)};mv("ACI","軟管・防震接頭");mv("五金另料","法蘭・墊片");
   out.sort((a,b)=>order.indexOf(a.g||"其他")-order.indexOf(b.g||"其他"));
   {const A=out.find(c=>c.n==="PVC另件・灰色・配件"),G=out.find(c=>c.n==="PVC另件・灰色厚");if(A&&G){const m=A.items.filter(x=>x.it.n==="樓板接頭");A.items=A.items.filter(x=>x.it.n!=="樓板接頭");G.items=[...G.items,...m];}}
+  {const f=out.filter(c=>c.gg19);if(f.length){const r=out.filter(c=>!c.gg19);const k=r.findIndex(c=>c.g===f[0].g);r.splice(k<0?r.length:k,0,...f);out.length=0;out.push(...r);}}
   menuCatalog.length=0;menuCatalog.push(...out);
 })();
 function materialName(line){
