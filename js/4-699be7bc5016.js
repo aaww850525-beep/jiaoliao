@@ -110,6 +110,29 @@ const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新
    S.variantFix20261115=1;persist();
   }
  })();
+// 補空白尺寸 BEGIN
+ (function(){
+  const SIZES={"止洩帶":"10捲/盒","調薄劑":"1加侖","鍍鋅漆":"1加侖","鋅粉底漆":"1加侖","AB膠":"1組"},VARIANTS={"松香水":{"v":[["1加侖","加侖"],["5加侖","桶"]],"keepAs":1},"甲苯":{"v":[["1加侖","加侖"],["5加侖","桶"]],"keepAs":1}},ADD=[{"after":"AB膠","item":{"n":"達克隆 ENA-1299","p":"","v":[["1組","",null,"組",""]]}}];
+  const moved={};
+  CATALOG.forEach((c,ci)=>c.items.forEach((it,ii)=>{
+   if(Object.hasOwn(SIZES,it.n))for(const v of it.v)if(!v[0])v[0]=SIZES[it.n];
+   const nv=VARIANTS[it.n];
+   if(nv&&it.v.length===1&&!it.v[0][0]){it.v=nv.v.map(([s,u])=>[s,"",null,u,""]);moved[ci+"_"+ii]=nv.keepAs;}
+  }));
+  for(const a of ADD){
+   if(CATALOG.some(c=>c.items.some(it=>it.n===a.item.n)))continue;
+   const c=CATALOG.find(c=>c.items.some(it=>it.n===a.after));
+   if(c)c.items.push(a.item);
+  }
+  if(S&&!S.variantFix20261115b){
+   for(const p of S.projects||[])for(const o of [p.draft,...(p.orders||[])])for(const l of (o&&o.lines)||[]){
+    const m=/^(\d+_\d+)\|0$/.exec(l.vk||"");
+    if(m&&moved[m[1]]!=null)l.vk=m[1]+"|"+moved[m[1]];
+   }
+   S.variantFix20261115b=1;persist();
+  }
+ })();
+// 補空白尺寸 END
  const menuCatalog=CATALOG.flatMap((c,ci)=>{
   if(ci>=PVC_NEW_START&&!c.gg19)return [];
   if(ci===0&&HI_PIPE_CI>0)return [{...c,n:"PVC灰色管",items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})).filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n}];
@@ -198,6 +221,18 @@ const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新
   {const f=out.filter(c=>c.gg19);if(f.length){const r=out.filter(c=>!c.gg19);const k=r.findIndex(c=>c.g===f[0].g);r.splice(k<0?r.length:k,0,...f);out.length=0;out.push(...r);}}
   menuCatalog.length=0;menuCatalog.push(...out);
 })();
+// 選單隱藏與排序 BEGIN
+ (function(){
+  const HIDE=new Set(["拉線膏"]),ADD=[["AB膠","達克隆 ENA-1299"]];
+  for(const c of menuCatalog){
+   c.items=c.items.filter(x=>!HIDE.has(x.it.n));
+   for(const [after,name] of ADD){
+    const from=c.items.findIndex(x=>x.it.n===name),to=c.items.findIndex(x=>x.it.n===after);
+    if(from>=0&&to>=0&&from!==to+1){const [x]=c.items.splice(from,1);c.items.splice(c.items.findIndex(y=>y.it.n===after)+1,0,x);}
+   }
+  }
+ })();
+// 選單隱藏與排序 END
 function materialName(line){
   if(line.ik&&+String(line.ik).split("_")[0]>=PVC_NEW_START&&PVC_LAB[line.cat])return (line.brand?PVC_LAB[line.cat].replace(/^南亞/,line.brand):PVC_LAB[line.cat])+" "+line.name;
   if(line.brand&&CATALOG.some(c=>c.g==="PVC另件"&&c.n===line.cat))return line.brand+" "+line.name;
