@@ -36,7 +36,7 @@ if(!S.presetSites2){
   S.presetSites2=true;
 }
 if(!S.presetSites3){
-  S.projects=S.projects.filter(p=>SITE_ADDR[p.name]!==undefined);
+  S.projects=S.projects.filter(p=>Object.hasOwn(SITE_ADDR,p.name)||p.orders.length||p.draft?.lines.length);
   SITE_LIST.forEach(([n,a])=>{if(!S.projects.find(x=>x.name===n))S.projects.push({id:uid(),name:n,addr:a,orders:[],draft:null})});
   const pos=n=>SITE_LIST.findIndex(x=>x[0]===n);S.projects.sort((x,y)=>pos(x.name)-pos(y.name));
   S.presetSites3=true;
@@ -77,7 +77,12 @@ const grooveCategories=new Set(CATALOG.filter(c=>c.g===carbonCategory.g&&/溝槽
 const PVC_NEW_START=90;const PVC_OLD=new Set([2, 3, 4, 5, 6]);
 const PVC_LAB=Object.fromEntries(CATALOG.slice(PVC_NEW_START).filter(c=>c.lab).map(c=>[c.n,c.lab]));
 const HI_PIPE_CI=CATALOG.findIndex(c=>c.hiPipe);
-const menuCatalog=CATALOG.flatMap((c,ci)=>{
+const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新生）","p":"新生五金 DR3030","v":[["3/8\"","DR3030・全長 30 mm・鑽孔 12.7 mm",null,"個","材質依叫料需求指定"]]}],["鍍鋅角鐵",{"n":"有孔角鐵 AGH620T（新生）","p":"新生五金 AGH620T","v":[["2\" × 5.0 mm","AGH620T・長孔 13 × 34 mm・3M/支",null,"支","孔距 55 mm"]]}],["鍍鋅雙層管束",{"n":"ST 雙層管束（新生）","p":"新生五金 ST","v":[["10\"","ST6100・碳鋼電鍍・外徑 267.4 mm",null,"個","型錄尺寸 A 3/4 吋"],["12\"","ST6120・碳鋼電鍍・外徑 318.5 mm",null,"個","型錄尺寸 A 3/4 吋"]]}]];
+ for(const [existing,item] of supplierItems){
+   const category=CATALOG.find(c=>c.items.some(entry=>entry.n===existing));
+   if(category)category.items.push(item);
+ }
+ const menuCatalog=CATALOG.flatMap((c,ci)=>{
   if(ci>=PVC_NEW_START&&!c.gg19)return [];
   if(ci===0&&HI_PIPE_CI>0)return [{...c,n:"PVC灰色管",items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})).filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n}];
   if(ci===1&&HI_PIPE_CI>0){const c0=CATALOG[0];const all=c0.items.map((it,ii)=>({it,key:"0_"+ii}));const hc=CATALOG[HI_PIPE_CI];
@@ -187,6 +192,15 @@ const ITEMS=[];menuCatalog.forEach((c,ci)=>c.items.forEach(({it,key})=>{
   ITEMS.push({key,cat:c.source,g:c.g||"其他",ci,it,sizes,min:nums.length?Math.min(...nums):null,max:nums.length?Math.max(...nums):null,
     hay:(c.g+" "+c.n+" "+it.n+" "+it.v.map(v=>v[0]+" "+v[1]).join(" ")).toLowerCase()})}));
 const vKey=(itemKey,vi)=>itemKey+"|"+vi;
+ function stockLength(name,variant){
+   return /^(鍍鋅|不銹鋼)槽鐵$/.test(name)&&/^[36]M\/支$/.test(variant?.[4]||"")?variant[4]:"";
+ }
+ function lineSpec(line){
+   const match=/^(\d+)_(\d+)\|(\d+)$/.exec(line.vk||"");
+   const variant=match&&CATALOG[+match[1]]?.items[+match[2]]?.v[+match[3]];
+   const length=line.stockLength||stockLength(line.name,variant);
+   return [line.spec,length].filter(Boolean).join(" ");
+ }
 
 // ---------- header ----------
 let siteChosen=!!(S.projects.find(p=>p.id===S.cur)&&(S.siteChosen||S.cur!==S.projects[0].id));if(siteChosen)S.siteChosen=true;
@@ -244,8 +258,12 @@ function inCartCount(itemKey){return draft().lines.filter(l=>l.ik===itemKey).len
 const menuCategoryByItem=new Map(ITEMS.map(x=>[x.key,x.ci]));
 function catCount(pred){return draft().lines.filter(l=>menuCategoryByItem.has(l.ik)&&pred(menuCategoryByItem.get(l.ik))).length}
 const itemImageKey=x=>x.cat+"|"+x.it.n;try{const _k="塑膠另件・預埋・伸縮・止水|排水管蓋（淺管帽）",_o="PVC套龍口・配管另件|排水管蓋（淺管帽）";if(!AI_IMAGES[_k]&&AI_IMAGES[_o])AI_IMAGES[_k]=AI_IMAGES[_o]}catch(e){}
-const itemImage=x=>AI_IMAGES[itemImageKey(x)]||imgOf(IMG.ITEM[itemImageKey(x)]);
-const isIllustration=x=>Boolean(AI_IMAGES[itemImageKey(x)]);
+const supplierPhotos={"內迫式短壁虎 DR3030（新生）":"img/f89952c72cddab156427.jpg","有孔角鐵 AGH620T（新生）":"img/b7f66ade62d738718018.jpg","ST 雙層管束（新生）":"img/88b5b195b958e2361b60.jpg","P型管夾(附螺絲)":"img/43f920c7941cb38bf52e.jpg","UL直角管束":"img/6650abfd5f74b69a83f6.jpg"};
+ const stainlessWeldPhotos={"45°彎頭":"img/dfbd398c89a777cb71de.jpg","90°彎頭":"img/11a54e34626d0ed778bf.jpg","同心大小頭":"img/c436e8a5cf147390afe7.jpg","三通":"img/ed0430acbaddb981311d.jpg","異徑三通":"img/b1e10001802e3b1d8346.jpg","管帽":"img/8f2b4a83ab20b28a931a.jpg"};
+ const supplierPhoto=x=>x.g==="懸吊・支架・螺絲"?supplierPhotos[x.it.n]:
+   /^SUS304不銹鋼有縫焊另件 (10S|20S)$/.test(x.cat)?stainlessWeldPhotos[x.it.n]:undefined;
+ const itemImage=x=>supplierPhoto(x)||AI_IMAGES[itemImageKey(x)]||imgOf(IMG.ITEM[itemImageKey(x)]);
+const isIllustration=x=>!supplierPhoto(x)&&Boolean(AI_IMAGES[itemImageKey(x)]);
 const imgOf=k=>k&&IMG.IC[k]?IMG.IC[k]:"";
 function tile(attrs,color,icon,label,sub,badge,small,img){
   return `<button class="tile${small?" sm":""}" ${attrs} style="--tc:${color}">${badge?`<span class="tbadge">${badge}</span>`:""}${img?`<span class="timg"><img src="${img}" alt=""></span>`:`<span class="ti">${icon}</span>`}<span class="tl">${esc(label)}</span>${sub?`<span class="ts">${esc(sub)}</span>`:""}</button>`;
@@ -296,7 +314,7 @@ function setQty(x,vi,qty){
   if(qty<=0){if(l)d.lines=d.lines.filter(z=>z!==l)}
   else if(l){l.qty=qty}
   else{const v=x.it.v[vi];const list=isNum(v[2])?v[2]:null;
-    d.lines.push({id:uid(),vk:k,ik:x.key,cat:x.cat,name:x.it.n,size:v[0],spec:v[1],list,priceNote:(isNum(v[2])||v[2]==null)?"":String(v[2]),unit:unitFor(v[3]),qty,price:null,remark:(isNum(v[2])||v[2]==null)?"":String(v[2])})}
+    d.lines.push({id:uid(),vk:k,ik:x.key,cat:x.cat,name:x.it.n,size:v[0],spec:v[1],stockLength:stockLength(x.it.n,v)||undefined,list,priceNote:(isNum(v[2])||v[2]==null)?"":String(v[2]),unit:unitFor(v[3]),qty,price:null,remark:(isNum(v[2])||v[2]==null)?"":String(v[2])})}
   persist();updateCart();
 }
 function cleanoutPhotos(spec){
@@ -323,7 +341,7 @@ function itemDlg(key,initialSpec){
   const shn=()=>{$("#shn").textContent=total()?`此品項已選 ${total()} 種規格`:"輸入數量即加入叫料單"};shn();
   let changed=false;
   D.onclick=e=>{
-    if(e.target.closest("[data-close]")){if(changed&&(x.g==="PVC管材"||(x.g==="PVC另件"&&!/^塑膠油/.test(x.it.n)))&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}if(changed&&/直角管束/.test(x.it.n)&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){raDlg(x);return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
+    if(e.target.closest("[data-close]")){if(changed&&(x.g==="PVC管材"||(x.g==="PVC另件"&&!/^塑膠油/.test(x.it.n)))&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}if(changed&&/直角管束/.test(x.it.n)&&(draft().angleClampAccessoryCounts?.[x.key]||x.it.v.some((v,vi)=>findLine(vKey(x.key,vi))))){raDlg(x);return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
     const c=e.target.closest("[data-s]");if(c){spec=c.dataset.s==="__all"?null:c.dataset.s;D.querySelectorAll("[data-s]").forEach(z=>z.classList.toggle("on",z===c));$("#shb").innerHTML=body();const photos=$("#cleanoutPhotos");if(photos)photos.innerHTML=cleanoutPhotos(spec);return}
     const b=e.target.closest("[data-a]");if(b){const r=b.closest(".vrow");const inp=r.querySelector("input");let n=(+inp.value||0)+(b.dataset.a==="+"?1:-1);if(n<0)n=0;inp.value=n||"";setQty(x,+r.dataset.vi,n);changed=true;r.classList.toggle("in",n>0);shn()}
   };
@@ -389,20 +407,27 @@ function accSet(name,dia,qty){const f=accFind(name,dia);if(f&&f.vi>=0){setQty(f.
   persist();updateCart()}
 function raDlg(x){
   const D=$("#dlg");const n=x.it.v.reduce((t,v,vi)=>{const l=findLine(vKey(x.key,vi));return t+(l?+l.qty||0:0)},0);
-  const UN="U型螺絲 2分（直角管束用）",US='線徑1/4"';
+  const UN="U型螺絲 2分（直角管束用）";
   const uq=()=>{const l=draft().lines.find(z=>z.vk==="acc|"+UN+"|2分");return l?l.qty:0};
   const uset=q=>{const d=draft();const k="acc|"+UN+"|2分";let l=d.lines.find(z=>z.vk===k);q=Math.max(0,+q||0);
     if(q<=0){if(l)d.lines=d.lines.filter(z=>z!==l)}else if(l)l.qty=q;
     else d.lines.push({id:uid(),vk:k,ik:"custom",cat:"懸吊系列",name:"U型螺絲",size:"2分(1/4\")",spec:"直角管束用",list:null,priceNote:"",unit:"支",qty:q,price:null,remark:""});
     persist();updateCart()};
   const NN="鍍鋅突緣螺帽",ND='1/4"';
-  const rows=[["U型螺絲 2分","直角管束用・建議 "+n+" 支",uq()||n,1],["凸緣螺母 2分","鍍鋅突緣螺帽 1/4\"・建議 "+(n*2)+" 個",accQty(NN,ND)||n*2,2]];
+  const order=draft();
+   const counts=order.angleClampAccessoryCounts||{};
+   // An old draft can already have a shared accessory line. Start from its saved quantities.
+   const previous=counts[x.key]||(!order.angleClampAccessoryCounts?Math.min(uq(),n):0);
+   const delta=n-previous;
+   const screwTotal=Math.max(0,uq()+delta);
+   const nutTotal=Math.max(0,accQty(NN,ND)+delta*2);
+   const rows=[["U型螺絲 2分","直角管束用・叫料單合計",screwTotal],["凸緣螺母 2分","鍍鋅突緣螺帽 1/4\"・叫料單合計",nutTotal]];
   D.innerHTML=`<div class="sh-h"><h2>需要 2分 U型螺絲＋2分凸緣螺母嗎？</h2><small>${esc(x.it.n)} 共 ${n} 個・每個配 U型螺絲 1 支、凸緣螺母 2 個</small><button class="sh-x" data-close>✕</button></div>
    <div class="sh-b">${rows.map(([b,sm,q],ri)=>`<div class="vrow in" data-r="${ri}"><div class="sz"><b>${b}</b><small>${sm}</small></div><div class="step"><button data-a="-" aria-label="減少">−</button><input type="number" inputmode="decimal" min="0" value="${q||""}" placeholder="0"><button data-a="+" aria-label="增加">＋</button></div></div>`).join("")}</div>
    <div class="sh-f"><button class="btn" data-skip>不需要</button><button class="btn btn-p" data-ok>需要，加入</button></div>`;
   D.onclick=e=>{
     if(e.target.closest("[data-close],[data-skip]")){D.close();return}
-    if(e.target.closest("[data-ok]")){const ins=D.querySelectorAll(".vrow input");uset(+ins[0].value||0);accSet(NN,ND,+ins[1].value||0);toast("已加入 U型螺絲、凸緣螺母");D.close();return}
+    if(e.target.closest("[data-ok]")){const ins=D.querySelectorAll(".vrow input");order.angleClampAccessoryCounts={...counts,[x.key]:n};uset(+ins[0].value||0);accSet(NN,ND,+ins[1].value||0);toast("已更新 U型螺絲、凸緣螺母數量");D.close();return}
     const b=e.target.closest("[data-a]");if(b){const inp=b.closest(".vrow").querySelector("input");let q=(+inp.value||0)+(b.dataset.a==="+"?1:-1);inp.value=Math.max(0,q)||""}
   };
   D.oninput=null;
@@ -454,7 +479,7 @@ $("#cbGo").onclick=()=>go("order");
 function renderOrder(){
   const d=draft();const v=$("#vOrder");
   const lines=d.lines.map((l,i)=>`<div class="line" data-id="${l.id}"><div class="no">${i+1}</div>
-    <div class="nm"><b>${esc(materialName(l))} ${esc(l.size)}</b><small>${esc(l.spec)}</small>
+    <div class="nm"><b>${esc(materialName(l))} ${esc(l.size)}</b><small>${esc(lineSpec(l))}</small>
       <div class="ctl"><div class="step"><button data-a="-">−</button><input class="qt" type="number" inputmode="decimal" min="0" step="any" value="${l.qty}"><button data-a="+">＋</button></div>
       <span class="note">${esc(l.unit)}</span>
       <input class="rm" maxlength="60" value="${esc(l.remark)}" placeholder="備註"><button class="del">刪除</button></div></div>
@@ -542,7 +567,7 @@ function renderHist(){
 let sumQ="",sumSite=null;
 function aggregate(projs){
   const m=new Map();
-  projs.forEach(p=>p.orders.forEach(o=>o.lines.forEach(l=>{const name=[materialName(l),l.size,l.spec].filter(Boolean).join(" ");const k=(l.cat||"")+"|"+name+"|"+(l.unit||"");
+  projs.forEach(p=>p.orders.forEach(o=>o.lines.forEach(l=>{const name=[materialName(l),l.size,lineSpec(l)].filter(Boolean).join(" ");const k=(l.cat||"")+"|"+name+"|"+(l.unit||"");
     let x=m.get(k);if(!x){const mm=/^(\d+)_(\d+)\|(\d+)$/.exec(l.vk||"");x={cat:l.cat||"",name,unit:l.unit||"",qty:0,n:0,last:"",by:{},ord:mm?[+mm[1],+mm[2],+mm[3]]:[9999,0,0]};m.set(k,x)}
     const q=+l.qty||0;x.qty=Math.round((x.qty+q)*100)/100;x.by[p.id]=Math.round(((x.by[p.id]||0)+q)*100)/100;x.n++;if((o.orderDate||"")>x.last)x.last=o.orderDate||""})));
   return m;
@@ -818,7 +843,7 @@ const LN_PRE={"150磅可鍛鑄鐵零件(熱浸)":"150磅熱浸","300磅可鍛鑄
 function lineName(l){let n=lineName0(l);n=n.replace(/^滾溝另件｜(\S+) /,(m,c)=>/^秀而久/.test(l.name||"")?"":/金通/.test(c)?"金通溝槽 ":/邁克/.test(c)?"溝槽 ":"");
   let pre=LN_PRE[l.cat]||"";const fs=/^富山閥・(.+)$/.exec(l.cat||"");if(fs)pre="富山 "+fs[1];
   if(!pre&&l.cat==="不銹鋼雙壓接另件・滑動式保溫另件"&&!/^北銘/.test(n))pre="不銹鋼壓接";if(pre&&!n.startsWith(pre))n=pre+" "+n;return n}
-function lineName0(l){const name=materialName(l);if(name!==l.name)return [name,l.size,l.spec].filter(Boolean).join(" ");return [false&&l.cat?l.cat.replace(/^PVC另件・/,"PVC ").replace(/另件$/,""):"",l.name,l.size,l.spec].filter(Boolean).join(" ")}
+function lineName0(l){return [materialName(l),l.size,lineSpec(l)].filter(Boolean).join(" ")}
 function buildPages(d){
   const st=S.settings;const company=d.company||st.company||"";const title=(st.title&&st.title!=="材料叫料單"?st.title:"材料出貨單");
   const box=on=>on?"■":"□";
