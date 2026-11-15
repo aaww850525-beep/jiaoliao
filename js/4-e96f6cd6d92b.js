@@ -82,6 +82,34 @@ const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新
    const category=CATALOG.find(c=>c.items.some(entry=>entry.n===existing));
    if(category)category.items.push(item);
  }
+// 品項查核修正 2026-11-15
+ (function(){
+  const inch=s=>{const m=String(s).replace(/\s/g,"").match(/^(\d+)(?:-(\d+)\/(\d+))?"|^(\d+)\/(\d+)"/);if(!m)return 1e9;return m[4]?m[4]/m[5]:+m[1]+(m[2]?m[2]/m[3]:0)};
+  const SORT=new Set(["鍍鋅螺帽","不銹鋼螺帽","鍍鋅突緣螺帽","不銹鋼突緣螺帽","船型螺帽"]);
+  const UNIT={"元/支":"支","元/M":"米","M":"米","PCS":"片"};
+  const remap={};
+  CATALOG.forEach((c,ci)=>c.items.forEach((it,ii)=>{
+   for(const v of it.v){
+    if(typeof v[0]==="string"){
+     v[0]=v[0].replace(/^(\d) (\d\/\d")/,"$1-$2").replace(/^(\d+(?:-\d+\/\d+)?") W$/,"$1W");
+    }
+    if(UNIT[v[3]])v[3]=UNIT[v[3]];
+    if(!v[3])v[3]=/100mm單價/.test(it.n)?"段":"個";
+    if(it.n==="耐熱CPVC管 (CNS14664)"&&typeof v[4]==="string")v[4]=v[4].replace(/^W15・/,"W16・");
+   }
+   if(SORT.has(it.n)){
+    const order=it.v.map((v,i)=>i).sort((a,b)=>inch(it.v[a][0])-inch(it.v[b][0])||a-b);
+    if(order.some((o,i)=>o!==i)){remap[ci+"_"+ii]=Object.fromEntries(order.map((o,i)=>[o,i]));it.v=order.map(o=>it.v[o]);}
+   }
+  }));
+  if(Object.keys(remap).length&&S&&!S.variantFix20261115){
+   for(const p of S.projects||[])for(const o of [p.draft,...(p.orders||[])])for(const l of (o&&o.lines)||[]){
+    const m=/^(\d+_\d+)\|(\d+)$/.exec(l.vk||"");
+    if(m&&remap[m[1]]&&remap[m[1]][m[2]]!=null)l.vk=m[1]+"|"+remap[m[1]][m[2]];
+   }
+   S.variantFix20261115=1;persist();
+  }
+ })();
  const menuCatalog=CATALOG.flatMap((c,ci)=>{
   if(ci>=PVC_NEW_START&&!c.gg19)return [];
   if(ci===0&&HI_PIPE_CI>0)return [{...c,n:"PVC灰色管",items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})).filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n}];
