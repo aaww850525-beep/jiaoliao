@@ -248,6 +248,7 @@ const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新
   {const A=out.find(c=>c.n==="PVC另件・灰色・配件"),G=out.find(c=>c.n==="PVC另件・灰色厚");if(A&&G){const m=A.items.filter(x=>x.it.n==="樓板接頭");A.items=A.items.filter(x=>x.it.n!=="樓板接頭");G.items=[...G.items,...m];}}
   {const f=out.filter(c=>c.gg19);if(f.length){const r=out.filter(c=>!c.gg19);const k=r.findIndex(c=>c.g===f[0].g);r.splice(k<0?r.length:k,0,...f);out.length=0;out.push(...r);}}
   {const H=new Set(["內迫式短壁虎","內迫式短壁虎 DR3030（新生）","有孔角鐵 AGH620T（新生）","被覆吊配管另件","UL直角管束","UCL 型鋼用直角管束","新型輕型鋼吊架 CHKN","ST 雙層管束（新生）"]);out.forEach(c=>{if(c.items.some(x=>H.has(x.it.n)))c.items=c.items.filter(x=>!H.has(x.it.n))});const C=out.find(c=>c.n==="C型鋼、角鐵、ㄇ型槽鐵、牙條");if(C){const r=/C型鋼$/;C.items=[...C.items.filter(x=>r.test(x.it.n)),...C.items.filter(x=>!r.test(x.it.n))];}}
+  {const di=out.findIndex(c=>c.n==="電白焊接另件 20S/40S");if(di>=0)out.splice(di,1);out.forEach(c=>{if(/焊接另件|有縫焊另件/.test(c.n)&&!/^SUS/.test(c.n))IMG.CAT[c.n]="h125"});}
   menuCatalog.length=0;menuCatalog.push(...out);
 })();
 // 選單隱藏與排序 BEGIN
