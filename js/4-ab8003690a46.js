@@ -162,7 +162,7 @@ const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新
  })();
 // 保溫管墊 END
  const menuCatalog=CATALOG.flatMap((c,ci)=>{
-  if(ci>=PVC_NEW_START&&!c.gg19)return [];
+  if(ci>=PVC_NEW_START&&!c.gg19&&!c.xadd)return [];
   if(ci===0&&HI_PIPE_CI>0)return [{...c,n:"PVC灰色管",items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})).filter(({it})=>!it.n.startsWith("HI耐衝擊管")),source:c.n}];
   if(ci===1&&HI_PIPE_CI>0){const c0=CATALOG[0];const all=c0.items.map((it,ii)=>({it,key:"0_"+ii}));const hc=CATALOG[HI_PIPE_CI];
     return [{...c,items:c.items.map((it,ii)=>({it,key:ci+"_"+ii})),source:c.n},
@@ -243,7 +243,7 @@ const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新
     else if(g==="牙件"||g==="壓接另件"||g==="焊件"){if(!order.includes("牙件"))order.push("牙件","焊件","壓接另件");}
     else if(!order.includes(g))order.push(g);
   });
-  const mv=(g,after)=>{const i=order.indexOf(g);if(i<0||!order.includes(after))return;order.splice(i,1);order.splice(order.indexOf(after)+1,0,g)};mv("ACI","軟管・防震接頭");mv("五金另料","法蘭・墊片");
+  const mv=(g,after)=>{const i=order.indexOf(g);if(i<0||!order.includes(after))return;order.splice(i,1);order.splice(order.indexOf(after)+1,0,g)};mv("ACI","軟管・防震接頭");mv("H型鋼","CIP管");mv("五金另料","法蘭・墊片");
   out.sort((a,b)=>order.indexOf(a.g||"其他")-order.indexOf(b.g||"其他"));
   {const A=out.find(c=>c.n==="PVC另件・灰色・配件"),G=out.find(c=>c.n==="PVC另件・灰色厚");if(A&&G){const m=A.items.filter(x=>x.it.n==="樓板接頭");A.items=A.items.filter(x=>x.it.n!=="樓板接頭");G.items=[...G.items,...m];}}
   {const f=out.filter(c=>c.gg19);if(f.length){const r=out.filter(c=>!c.gg19);const k=r.findIndex(c=>c.g===f[0].g);r.splice(k<0?r.length:k,0,...f);out.length=0;out.push(...r);}}
