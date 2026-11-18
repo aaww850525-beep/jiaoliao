@@ -446,9 +446,37 @@ function cleanoutPhotos(spec){
     `<figure style="margin:8px 0;text-align:center"><img src="${CLEANOUT_IMAGES[color]}" alt="${color==="橘色"?"桔色":"灰色"}暗式清潔口實物照片" style="width:110px;height:130px;object-fit:contain;background:white;border-radius:8px"><figcaption>${color==="橘色"?"桔色":"灰色"}暗式清潔口</figcaption></figure>`
   ).join("");
 }
-const ITEM_REMIND={"牙條固定片":"⚠️ 提醒：牙條固定片要另外叫 2分U型螺絲 2只、2分凸緣螺帽 2只"};
+const ITEM_REMIND={};
+function hbDlg(x){
+  const D=$("#dlg");let spec=null;const specs=[...new Set(x.it.v.map(v=>v[1]))];
+  const row=(v,vi)=>{const l=findLine(vKey(x.key,vi));const on=l&&l.qty>0;
+    return `<div class="vrow ${on?"in":""}" data-vi="${vi}" style="flex-wrap:wrap"><div class="sz"><b>${esc(v[0])}</b><small>${esc(v[1])}</small></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-left:auto">
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px">長<input data-f="len" type="number" inputmode="decimal" min="0" value="${l&&l.len||""}" placeholder="0" style="width:64px;font-size:16px;padding:6px;border:1px solid #cbd5e1;border-radius:8px;text-align:center">公分</label>
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px">×<input data-f="qty" type="number" inputmode="decimal" min="0" value="${on?l.qty:""}" placeholder="0" style="width:52px;font-size:16px;padding:6px;border:1px solid #cbd5e1;border-radius:8px;text-align:center">支</label></div></div>`};
+  const body=()=>x.it.v.map((v,vi)=>({v,vi})).filter(r=>spec==null||r.v[1]===spec).map(r=>row(r.v,r.vi)).join("");
+  const save=r=>{const vi=+r.dataset.vi;const v=x.it.v[vi];const len=+r.querySelector('[data-f=len]').value||0;const q=+r.querySelector('[data-f=qty]').value||0;
+    const d=draft();const k=vKey(x.key,vi);let l=findLine(k);
+    if(q<=0){if(l)d.lines=d.lines.filter(z=>z!==l)}
+    else{const sp=v[1]+(len?`・每支 ${len} 公分`:"・長度未填");
+      if(l){l.qty=q;l.len=len||"";l.spec=sp;l.unit="支"}
+      else d.lines.push({id:uid(),vk:k,ik:x.key,cat:x.cat,name:x.it.n,size:v[0],spec:sp,len:len||"",list:null,priceNote:"",unit:"支",qty:q,price:null,remark:""})}
+    r.classList.toggle("in",q>0);persist();updateCart()};
+  const _im=itemImage(x);
+  D.innerHTML=`<div class="sh-h"><h2>${_im?`<img src="${_im}" alt="" style="width:44px;height:44px;border-radius:10px;vertical-align:middle;margin-right:6px">`:ICON(x.cat)} ${esc(x.it.n)}</h2><small>每一列填長度（公分）和支數</small><button class="sh-x" data-close>✕</button>
+   <div class="spec-chips"><button class="chip on" data-s="__all">全部</button>${specs.map(s=>`<button class="chip" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div></div>
+   <div class="sh-b" id="shb">${body()}</div>
+   <div class="sh-f"><span class="note" style="margin-right:auto;align-self:center">長度和支數都填才會加入</span><button class="btn btn-p" data-close>完成</button></div>`;
+  D.onclick=e=>{
+    if(e.target.closest("[data-close]")){const miss=x.it.v.some((v,vi)=>{const l=findLine(vKey(x.key,vi));return l&&!l.len});if(miss){toast("有 H型鋼 沒填長度（公分），請補上");return}D.close();return}
+    const c=e.target.closest("[data-s]");if(c){spec=c.dataset.s==="__all"?null:c.dataset.s;D.querySelectorAll("[data-s]").forEach(z=>z.classList.toggle("on",z===c));$("#shb").innerHTML=body();return}
+  };
+  D.oninput=e=>{const r=e.target.closest(".vrow");if(r)save(r)};
+  D.onclose=()=>{renderList()};
+  D.showModal();
+}
 function itemDlg(key,initialSpec){
-  const x=ITEMS.find(i=>i.key===key);const specs=[...new Set(x.it.v.map(v=>v[1]))];let spec=initialSpec||null;
+  const x=ITEMS.find(i=>i.key===key);if(x&&x.it.n==="H型鋼"&&x.g==="H型鋼"){hbDlg(x);return}const specs=[...new Set(x.it.v.map(v=>v[1]))];let spec=initialSpec||null;
   const D=$("#dlg");
   function body(){
     const rows=x.it.v.map((v,vi)=>({v,vi})).filter(r=>spec==null||r.v[1]===spec);
@@ -467,7 +495,7 @@ function itemDlg(key,initialSpec){
   const shn=()=>{$("#shn").textContent=total()?`此品項已選 ${total()} 種規格`:"輸入數量即加入叫料單"};shn();
   let changed=false;
   D.onclick=e=>{
-    if(e.target.closest("[data-close]")){if(changed&&(x.g==="PVC管材"||(x.g==="PVC另件"&&!/^塑膠油/.test(x.it.n)))&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}if(changed&&/直角管束/.test(x.it.n)&&(draft().angleClampAccessoryCounts?.[x.key]||x.it.v.some((v,vi)=>findLine(vKey(x.key,vi))))){raDlg(x);return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
+    if(e.target.closest("[data-close]")){if(changed&&(x.g==="PVC管材"||(x.g==="PVC另件"&&!/^塑膠油/.test(x.it.n)))&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}if(changed&&/直角管束|牙條固定片/.test(x.it.n)&&(draft().angleClampAccessoryCounts?.[x.key]||x.it.v.some((v,vi)=>findLine(vKey(x.key,vi))))){raDlg(x);return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
     const c=e.target.closest("[data-s]");if(c){spec=c.dataset.s==="__all"?null:c.dataset.s;D.querySelectorAll("[data-s]").forEach(z=>z.classList.toggle("on",z===c));$("#shb").innerHTML=body();const photos=$("#cleanoutPhotos");if(photos)photos.innerHTML=cleanoutPhotos(spec);return}
     const b=e.target.closest("[data-a]");if(b){const r=b.closest(".vrow");const inp=r.querySelector("input");let n=(+inp.value||0)+(b.dataset.a==="+"?1:-1);if(n<0)n=0;inp.value=n||"";setQty(x,+r.dataset.vi,n);changed=true;r.classList.toggle("in",n>0);shn()}
   };
@@ -545,10 +573,10 @@ function raDlg(x){
    // An old draft can already have a shared accessory line. Start from its saved quantities.
    const previous=counts[x.key]||(!order.angleClampAccessoryCounts?Math.min(uq(),n):0);
    const delta=n-previous;
-   const screwTotal=Math.max(0,uq()+delta);
+   const UR=x.it.n==="牙條固定片"?2:1;const screwTotal=Math.max(0,uq()+delta*UR);
    const nutTotal=Math.max(0,accQty(NN,ND)+delta*2);
    const rows=[["U型螺絲 2分","直角管束用・叫料單合計",screwTotal],["凸緣螺母 2分","鍍鋅突緣螺帽 1/4\"・叫料單合計",nutTotal]];
-  D.innerHTML=`<div class="sh-h"><h2>需要 2分 U型螺絲＋2分凸緣螺母嗎？</h2><small>${esc(x.it.n)} 共 ${n} 個・每個配 U型螺絲 1 支、凸緣螺母 2 個</small><button class="sh-x" data-close>✕</button></div>
+  D.innerHTML=`<div class="sh-h"><h2>需要 2分 U型螺絲＋2分凸緣螺母嗎？</h2><small>${esc(x.it.n)} 共 ${n} 個・每個配 U型螺絲 ${UR} 支、凸緣螺母 2 個</small><button class="sh-x" data-close>✕</button></div>
    <div class="sh-b">${rows.map(([b,sm,q],ri)=>`<div class="vrow in" data-r="${ri}"><div class="sz"><b>${b}</b><small>${sm}</small></div><div class="step"><button data-a="-" aria-label="減少">−</button><input type="number" inputmode="decimal" min="0" value="${q||""}" placeholder="0"><button data-a="+" aria-label="增加">＋</button></div></div>`).join("")}</div>
    <div class="sh-f"><button class="btn" data-skip>不需要</button><button class="btn btn-p" data-ok>需要，加入</button></div>`;
   D.onclick=e=>{
