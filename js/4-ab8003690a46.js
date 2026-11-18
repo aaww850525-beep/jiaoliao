@@ -446,6 +446,7 @@ function cleanoutPhotos(spec){
     `<figure style="margin:8px 0;text-align:center"><img src="${CLEANOUT_IMAGES[color]}" alt="${color==="橘色"?"桔色":"灰色"}暗式清潔口實物照片" style="width:110px;height:130px;object-fit:contain;background:white;border-radius:8px"><figcaption>${color==="橘色"?"桔色":"灰色"}暗式清潔口</figcaption></figure>`
   ).join("");
 }
+const ITEM_REMIND={"牙條固定片":"⚠️ 提醒：牙條固定片要另外叫 2分U型螺絲 2只、2分凸緣螺帽 2只"};
 function itemDlg(key,initialSpec){
   const x=ITEMS.find(i=>i.key===key);const specs=[...new Set(x.it.v.map(v=>v[1]))];let spec=initialSpec||null;
   const D=$("#dlg");
@@ -458,7 +459,8 @@ function itemDlg(key,initialSpec){
   }
   function total(){return x.it.v.reduce((a,v,vi)=>{const l=findLine(vKey(x.key,vi));return a+(l?1:0)},0)}
   const _im=x.cat==="PVC另件・清潔口"?"":itemImage(x);
-  D.innerHTML=`<div class="sh-h"><h2>${_im?`<img src="${_im}" alt="" style="width:44px;height:44px;border-radius:10px;vertical-align:middle;margin-right:6px;border:1px solid #e5e7eb">`:ICON(x.cat)} ${esc(x.it.n)}</h2><small>${esc(menuCatalog[x.ci].n)}${isIllustration(x)?" · AI 示意圖":""}</small>${x.cat==="PVC另件・清潔口"?`<div id="cleanoutPhotos" style="display:flex;gap:12px">${cleanoutPhotos(spec)}</div>`:""}<button class="sh-x" data-close>✕</button>
+  if(ITEM_REMIND[x.it.n])setTimeout(()=>toast(ITEM_REMIND[x.it.n]),50);
+  D.innerHTML=`<div class="sh-h"><h2>${_im?`<img src="${_im}" alt="" style="width:44px;height:44px;border-radius:10px;vertical-align:middle;margin-right:6px;border:1px solid #e5e7eb">`:ICON(x.cat)} ${esc(x.it.n)}</h2><small>${esc(menuCatalog[x.ci].n)}${isIllustration(x)?" · AI 示意圖":""}</small>${(ITEM_REMIND[x.it.n])?`<div class="remind" style="margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:#fff3cd;border:1px solid #f0c36d;color:#7a4b00;font-weight:600;font-size:15px">${esc(ITEM_REMIND[x.it.n])}</div>`:""}${x.cat==="PVC另件・清潔口"?`<div id="cleanoutPhotos" style="display:flex;gap:12px">${cleanoutPhotos(spec)}</div>`:""}<button class="sh-x" data-close>✕</button>
    ${specs.length>1&&specs.length<=12?`<div class="spec-chips"><button class="chip on" data-s="__all">全部</button>${specs.map(s=>`<button class="chip" data-s="${esc(s)}">${esc(s||"一般")}</button>`).join("")}</div>`:""}</div>
    <div class="sh-b" id="shb">${body()}</div>
    <div class="sh-f"><span class="note" style="margin-right:auto;align-self:center" id="shn"></span><button class="btn btn-p" data-close>完成</button></div>`;
