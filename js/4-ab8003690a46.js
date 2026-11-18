@@ -480,7 +480,7 @@ function itemDlg(key,initialSpec){
   const x=ITEMS.find(i=>i.key===key);if(x&&x.it.n==="H型鋼"&&x.g==="H型鋼"){hbDlg(x);return}const specs=[...new Set(x.it.v.map(v=>v[1]))];let spec=initialSpec||null;
   const D=$("#dlg");
   function body(){
-    const rows=x.it.v.map((v,vi)=>({v,vi})).filter(r=>spec==null||r.v[1]===spec);
+    const rows=x.it.v.map((v,vi)=>({v,vi})).filter(r=>spec==null||r.v[1]===spec);if(x.it.n==="鍍鋅角鐵"){const ANGLE_SORT=z=>{const m=z.v[0].match(/^([\d\-\/]+)"\*([\d.]+)mm/);if(!m)return [99,0,""];const [w,f]=m[1].split("-");const inch=f?(+w+eval(f)):eval(w);return [inch,+m[2],z.v[1]]};rows.sort((p,q)=>{const A=ANGLE_SORT(p),B=ANGLE_SORT(q);return A[0]-B[0]||A[1]-B[1]||A[2].localeCompare(B[2])})}
     return rows.map(({v,vi})=>{const l=findLine(vKey(x.key,vi));const qn=l?l.qty:0;
       return `<div class="vrow ${qn?"in":""}" data-vi="${vi}"><div class="sz"><b>${esc(v[0])}</b>${specs.length>1&&spec==null||v[1]?`<small>${esc(v[1])}</small>`:""}${v[4]?`<small>${esc(v[4])}</small>`:""}</div>
       <div class="pp"><small>單位：${esc(unitFor(v[3]))}</small></div>
