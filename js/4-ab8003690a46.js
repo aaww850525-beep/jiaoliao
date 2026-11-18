@@ -477,7 +477,7 @@ function hbDlg(x){
   D.showModal();
 }
 function itemDlg(key,initialSpec){
-  const x=ITEMS.find(i=>i.key===key);if(x&&x.it.n==="H型鋼"&&x.g==="H型鋼"){hbDlg(x);return}const specs=[...new Set(x.it.v.map(v=>v[1]))];let spec=initialSpec||null;
+  const x=ITEMS.find(i=>i.key===key);if(x&&x.it.n==="H型鋼"&&x.g==="H型鋼"){hbDlg(x);return}const specs=[...new Set(x.it.v.map(v=>v[1]))];let spec=initialSpec||null;if(specs.length&&specs.every(z=>/^(無孔|單孔|雙孔)[36]M$/.test(z))){const HOLE_ORD=["無孔","單孔","雙孔"];specs.sort((p,q)=>HOLE_ORD.indexOf(p.slice(0,2))-HOLE_ORD.indexOf(q.slice(0,2))||p.localeCompare(q))}
   const D=$("#dlg");
   function body(){
     const rows=x.it.v.map((v,vi)=>({v,vi})).filter(r=>spec==null||r.v[1]===spec);if(x.it.n==="鍍鋅角鐵"){const ANGLE_SORT=z=>{const m=z.v[0].match(/^([\d\-\/]+)"\*([\d.]+)mm/);if(!m)return [99,0,""];const [w,f]=m[1].split("-");const inch=f?(+w+eval(f)):eval(w);return [inch,+m[2],z.v[1]]};rows.sort((p,q)=>{const A=ANGLE_SORT(p),B=ANGLE_SORT(q);return A[0]-B[0]||A[1]-B[1]||A[2].localeCompare(B[2])})}
