@@ -247,7 +247,7 @@ const supplierItems=[["內迫式短壁虎",{"n":"內迫式短壁虎 DR3030（新
   out.sort((a,b)=>order.indexOf(a.g||"其他")-order.indexOf(b.g||"其他"));
   {const A=out.find(c=>c.n==="PVC另件・灰色・配件"),G=out.find(c=>c.n==="PVC另件・灰色厚");if(A&&G){const m=A.items.filter(x=>x.it.n==="樓板接頭");A.items=A.items.filter(x=>x.it.n!=="樓板接頭");G.items=[...G.items,...m];}}
   {const f=out.filter(c=>c.gg19);if(f.length){const r=out.filter(c=>!c.gg19);const k=r.findIndex(c=>c.g===f[0].g);r.splice(k<0?r.length:k,0,...f);out.length=0;out.push(...r);}}
-  {const H=new Set(["內迫式短壁虎","內迫式短壁虎 DR3030（新生）","有孔角鐵 AGH620T（新生）","被覆吊配管另件","UL直角管束","UCL 型鋼用直角管束","新型輕型鋼吊架 CHKN","ST 雙層管束（新生）","CIP 直管(3M)","鍍鋅 日標法蘭","鍍鋅 日標盲法蘭","鍍鋅 美標法蘭","鍍鋅 美標盲法蘭","鍍鋅 德標法蘭","鍍鋅 德標盲法蘭","304 日標法蘭","304 日標盲法蘭","304 美標法蘭","304 美標盲法蘭","304 德標法蘭","304 德標盲法蘭"]);out.forEach(c=>{if(c.items.some(x=>H.has(x.it.n)))c.items=c.items.filter(x=>!H.has(x.it.n))});const C=out.find(c=>c.n==="C型鋼、角鐵、ㄇ型槽鐵、牙條");if(C){const r=/C型鋼$/;C.items=[...C.items.filter(x=>r.test(x.it.n)),...C.items.filter(x=>!r.test(x.it.n))];}}
+  {const H=new Set(["內迫式短壁虎","內迫式短壁虎 DR3030（新生）","有孔角鐵 AGH620T（新生）","被覆吊配管另件","UL直角管束","UCL 型鋼用直角管束","新型輕型鋼吊架 CHKN","ST 雙層管束（新生）","CIP 直管(3M)","鍍鋅 日標法蘭","鍍鋅 日標盲法蘭","鍍鋅 美標法蘭","鍍鋅 美標盲法蘭","鍍鋅 德標法蘭","鍍鋅 德標盲法蘭","304 日標法蘭","304 日標盲法蘭","304 美標法蘭","304 美標盲法蘭","304 德標法蘭","304 德標盲法蘭","日標 法蘭墊片 非石棉","日標 法蘭墊片 EPDM","日標 法蘭墊片 VITON","日標 法蘭墊片 EPDM+PTFE","美標 法蘭墊片 非石棉","美標 法蘭墊片 EPDM","美標 法蘭墊片 VITON","美標 法蘭墊片 EPDM+PTFE","德標 法蘭墊片 非石棉","德標 法蘭墊片 EPDM","德標 法蘭墊片 VITON","德標 法蘭墊片 EPDM+PTFE"]);out.forEach(c=>{if(c.items.some(x=>H.has(x.it.n)))c.items=c.items.filter(x=>!H.has(x.it.n))});const C=out.find(c=>c.n==="C型鋼、角鐵、ㄇ型槽鐵、牙條");if(C){const r=/C型鋼$/;C.items=[...C.items.filter(x=>r.test(x.it.n)),...C.items.filter(x=>!r.test(x.it.n))];}}
   {const di=out.findIndex(c=>c.n==="電白焊接另件 20S/40S");if(di>=0)out.splice(di,1);out.forEach(c=>{if(/焊接另件|有縫焊另件/.test(c.n)&&!/^SUS/.test(c.n))IMG.CAT[c.n]="h125"});IMG.IC["blk90"]="img/adce9ba0cff859a0e540.jpg";IMG.CAT["黑鐵焊接另件 20S/40S"]="blk90";IMG.IC["cip90"]="img/944d9648b1656dfc6aca.jpg";IMG.CAT["CIP 環氧樹脂塗裝鑄鐵管・另件"]="cip90";}
   {const C=out.find(c=>c.n==="六角螺絲、華司、螺帽");if(C){const rk=n=>/彈簧華司/.test(n)?2:/華司/.test(n)?1:/螺帽/.test(n)?3:/螺絲/.test(n)?0:4;const sp=n=>/彈簧華司/.test(n)?(/不銹鋼/.test(n)?1:0):0;C.items=C.items.map((x,i)=>({x,i})).sort((p,q)=>rk(p.x.it.n)-rk(q.x.it.n)||sp(p.x.it.n)-sp(q.x.it.n)||p.i-q.i).map(z=>z.x);}}
   menuCatalog.length=0;menuCatalog.push(...out);
@@ -477,6 +477,23 @@ function hbDlg(x){
   D.onclose=()=>{renderList()};
   D.showModal();
 }
+function gkStd(n){n=n.replace(/\s/g,"");if(/DIN/.test(n))return "DIN PN16";if(/水道/.test(n))return "水道規格";if(/150/.test(n)&&!/10K/.test(n))return "150# 美規";const m=n.match(/(5K|10K|16K|20K)/);return m?"JIS "+m[1]:""}
+function gkDlg(x){
+  const st=gkStd(x.it.n);const gk=ITEMS.find(i=>i.it.n==="法蘭墊片EPDM "+st);if(!gk){$("#dlg").close();return}
+  const sel=x.it.v.map((v,vi)=>({v,l:findLine(vKey(x.key,vi))})).filter(r=>r.l&&r.l.qty>0);
+  const rows=sel.map(r=>{const gi=gk.it.v.findIndex(g=>g[0]===r.v[0]);if(gi<0)return null;const gl=findLine(vKey(gk.key,gi));return {sz:r.v[0],gi,q:gl?gl.qty:r.l.qty}}).filter(Boolean);
+  if(!rows.length){$("#dlg").close();return}
+  const D=$("#dlg");
+  D.innerHTML=`<div class="sh-h"><h2>要一起叫法蘭墊片嗎？</h2><small>${esc(gk.it.n)}・依剛選的法蘭尺寸帶入，可調整數量</small><button class="sh-x" data-close>✕</button></div>
+   <div class="sh-b">${rows.map((r,ri)=>`<div class="vrow in" data-r="${ri}"><div class="sz"><b>${esc(r.sz)}</b><small>法蘭墊片EPDM</small></div><div class="step"><button data-a="-" aria-label="減少">−</button><input type="number" inputmode="decimal" min="0" value="${r.q||""}" placeholder="0"><button data-a="+" aria-label="增加">＋</button></div></div>`).join("")}</div>
+   <div class="sh-f"><button class="btn" data-skip>不需要</button><button class="btn btn-p" data-ok>需要，加入</button></div>`;
+  D.oninput=null;
+  D.onclick=e=>{
+    if(e.target.closest("[data-close],[data-skip]")){D.close();return}
+    if(e.target.closest("[data-ok]")){D.querySelectorAll(".vrow").forEach(r=>{const rr=rows[+r.dataset.r];setQty(gk,rr.gi,+r.querySelector("input").value||0)});toast("已加入法蘭墊片");D.close();return}
+    const b=e.target.closest("[data-a]");if(b){const inp=b.closest(".vrow").querySelector("input");inp.value=Math.max(0,(+inp.value||0)+(b.dataset.a==="+"?1:-1))||""}
+  };
+}
 function itemDlg(key,initialSpec){
   const x=ITEMS.find(i=>i.key===key);if(x&&x.it.n==="H型鋼"&&x.g==="H型鋼"){hbDlg(x);return}const specs=[...new Set(x.it.v.map(v=>v[1]))];let spec=initialSpec||null;if(specs.length&&specs.every(z=>/^(無孔|單孔|雙孔)[36]M$/.test(z))){const HOLE_ORD=["無孔","單孔","雙孔"];specs.sort((p,q)=>HOLE_ORD.indexOf(p.slice(0,2))-HOLE_ORD.indexOf(q.slice(0,2))||p.localeCompare(q))}
   const D=$("#dlg");
@@ -497,7 +514,7 @@ function itemDlg(key,initialSpec){
   const shn=()=>{$("#shn").textContent=total()?`此品項已選 ${total()} 種規格`:"輸入數量即加入叫料單"};shn();
   let changed=false;
   D.onclick=e=>{
-    if(e.target.closest("[data-close]")){if(changed&&(x.g==="PVC管材"||(x.g==="PVC另件"&&!/^塑膠油/.test(x.it.n)))&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}if(changed&&/直角管束|牙條固定片/.test(x.it.n)&&(draft().angleClampAccessoryCounts?.[x.key]||x.it.v.some((v,vi)=>findLine(vKey(x.key,vi))))){raDlg(x);return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
+    if(e.target.closest("[data-close]")){if(changed&&(x.g==="PVC管材"||(x.g==="PVC另件"&&!/^塑膠油/.test(x.it.n)))&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){pipeBrandDlg(x);return}if(changed&&x.it.n==="塑膠油"&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){brushDlg();return}if(changed&&/直角管束|牙條固定片/.test(x.it.n)&&(draft().angleClampAccessoryCounts?.[x.key]||x.it.v.some((v,vi)=>findLine(vKey(x.key,vi))))){raDlg(x);return}if(changed&&x.it.fl1120&&/法蘭|盲板/.test(x.it.n)&&!/墊片/.test(x.it.n)&&x.it.v.some((v,vi)=>findLine(vKey(x.key,vi)))){gkDlg(x);return}const g=changed?screwGroups(x):[];if(g.length){accDlg(g)}else D.close();return}
     const c=e.target.closest("[data-s]");if(c){spec=c.dataset.s==="__all"?null:c.dataset.s;D.querySelectorAll("[data-s]").forEach(z=>z.classList.toggle("on",z===c));$("#shb").innerHTML=body();const photos=$("#cleanoutPhotos");if(photos)photos.innerHTML=cleanoutPhotos(spec);return}
     const b=e.target.closest("[data-a]");if(b){const r=b.closest(".vrow");const inp=r.querySelector("input");let n=(+inp.value||0)+(b.dataset.a==="+"?1:-1);if(n<0)n=0;inp.value=n||"";setQty(x,+r.dataset.vi,n);changed=true;r.classList.toggle("in",n>0);shn()}
   };
